@@ -2,6 +2,7 @@ import { Info, MessageCircle, ShoppingCart, Store, House } from 'lucide-react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { AgeGate } from '@/components/AgeGate'
 import { CartSheet } from '@/components/CartSheet'
+import { useConfig } from '@/hooks/useCatalogo'
 import { usePedidosPausados } from '@/hooks/useLicenca'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { useCart } from '@/lib/cart'
@@ -113,6 +114,24 @@ function FloatingOrderButton() {
   )
 }
 
+/** Botão flutuante de atendimento: sempre visível, abre o WhatsApp da loja direto (não é o carrinho). */
+function FloatingSupportButton() {
+  const { data } = useConfig()
+  const numero = data?.whatsapp_numero?.replace(/\D/g, '')
+  if (!numero) return null
+  return (
+    <a
+      href={`https://wa.me/${numero}?text=${encodeURIComponent(`Olá! Vim pelo site da ${NOME_LOJA} e preciso de atendimento.`)}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Falar no WhatsApp com a loja"
+      className="fixed bottom-20 left-4 z-50 flex h-14 w-14 items-center justify-center rounded-full border-2 border-preto bg-zap text-preto shadow-adesivo"
+    >
+      <WhatsAppIcon className="h-7 w-7" />
+    </a>
+  )
+}
+
 export function Layout() {
   const pausados = usePedidosPausados()
   return (
@@ -134,6 +153,7 @@ export function Layout() {
         <p className="font-bold">{AVISO_18}</p>
         <p className="mt-1">© {new Date().getFullYear()} {NOME_LOJA}</p>
       </footer>
+      <FloatingSupportButton />
       <FloatingOrderButton />
       <CartSheet />
       <BottomNav />

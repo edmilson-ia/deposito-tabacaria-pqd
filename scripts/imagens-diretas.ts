@@ -27,6 +27,7 @@ const ITENS: { nome: string; unidade: 'un' | 'cx'; arquivoId: string; force?: bo
   { nome: 'Império Zero pack', unidade: 'cx', arquivoId: '1qhsRJ4vo0anSC1pNfNF18eJNcBaV2z0D' },
   { nome: 'Antarctica Latão', unidade: 'cx', arquivoId: '1ZmHT1HVIFF7lzcKdT8dN0gfHxSiJ2Uk9' },
   { nome: 'Guaraná Antarctica 350ml Zero', unidade: 'un', arquivoId: '1t2z010F7d4_SIDdkjqUzqCqHFCiRu4c-' },
+  { nome: 'Antarctica Latão', unidade: 'un', arquivoId: '1M8kkR7KfAHQ2_8vJg8fVSv--sOsojyiI' },
 ]
 
 async function main() {
