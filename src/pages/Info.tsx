@@ -3,7 +3,7 @@ import { InstagramIcon } from '@/components/InstagramIcon'
 import { buttonVariants } from '@/components/ui/button'
 import { useConfig } from '@/hooks/useCatalogo'
 import { usePageTitle } from '@/hooks/usePageTitle'
-import { AVISO_18, cn, NOME_LOJA } from '@/lib/utils'
+import { cn, NOME_LOJA } from '@/lib/utils'
 
 const ENDERECO = 'Rua Pedralva, 50 — Realengo, RJ'
 const LINK_MAPA = 'https://maps.apple/p/c1s_GXLa.vfykA'
@@ -68,7 +68,6 @@ export function Empresa() {
         Cervejas, refrigerantes, energéticos, gelo e tabacaria. Monte seu pedido no catálogo e finalize pelo WhatsApp.
       </p>
       <p className="text-bege/90">Formas de pagamento: Pix, dinheiro ou cartão na entrega. O valor da entrega é combinado pelo WhatsApp.</p>
-      <p className="text-sm font-bold">{AVISO_18}</p>
     </div>
   )
 }

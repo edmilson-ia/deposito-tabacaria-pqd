@@ -10,7 +10,7 @@ import { usePedidosPausados } from '@/hooks/useLicenca'
 import { useCart } from '@/lib/cart'
 import { criarPedido, PedidoError } from '@/lib/pedido'
 import { checkoutSchema, FORMAS_PAGAMENTO, mascararTelefone, parseValor, type CheckoutInput } from '@/lib/schemas'
-import { AVISO_18, cn, formatBRL, UNIDADE_LABEL } from '@/lib/utils'
+import { cn, formatBRL, UNIDADE_LABEL } from '@/lib/utils'
 import { montarMensagem, urlWhatsapp } from '@/lib/whatsapp'
 
 const CLIENTE_KEY = 'pqd_cliente_v1'
@@ -313,7 +313,6 @@ export function CartSheet() {
                   Estamos sem receber novos pedidos no momento. Seu carrinho fica salvo: volte em breve!
                 </p>
               )}
-              <p className="text-center text-[11px] font-bold text-preto/80">{AVISO_18}</p>
             </div>
           </>
         )}

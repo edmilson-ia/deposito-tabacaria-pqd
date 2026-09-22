@@ -24,4 +24,3 @@ export const UNIDADE_SIGLA: Record<Unidade, string> = {
 }
 
 export const NOME_LOJA = 'Depósito e Tabacaria do PQD'
-export const AVISO_18 = 'Venda proibida para menores de 18 anos.'

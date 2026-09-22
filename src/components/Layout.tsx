@@ -5,7 +5,7 @@ import { CartSheet } from '@/components/CartSheet'
 import { usePedidosPausados } from '@/hooks/useLicenca'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { useCart } from '@/lib/cart'
-import { AVISO_18, cn, formatBRL, NOME_LOJA } from '@/lib/utils'
+import { cn, formatBRL, NOME_LOJA } from '@/lib/utils'
 
 const NAV = [
   { to: '/', label: 'Início', icon: House, end: true },
@@ -131,8 +131,7 @@ export function Layout() {
         <Outlet />
       </main>
       <footer className="mx-auto max-w-5xl px-4 pb-6 text-center text-xs text-bege/80">
-        <p className="font-bold">{AVISO_18}</p>
-        <p className="mt-1">© {new Date().getFullYear()} {NOME_LOJA}</p>
+        <p>© {new Date().getFullYear()} {NOME_LOJA}</p>
       </footer>
       <FloatingOrderButton />
       <CartSheet />
