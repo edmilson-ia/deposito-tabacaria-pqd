@@ -1,0 +1,70 @@
+@import 'tailwindcss';
+
+/* Cores amostradas direto da logo (scripts/branding.ts → public/branding/cores.json) */
+@theme {
+  --color-verde: #2a3e2e;
+  --color-verde-escuro: #1f2e23;
+  --color-bege: #efd8ac;
+  --color-bege-escuro: #dfc48f;
+  --color-ambar: #f58926;
+  --color-ambar-hover: #d9700f;
+  --color-preto: #111111;
+  --color-zap: #25d366;
+
+  --font-titulo: 'Pirata One', 'UnifrakturCook', serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-adesivo: 4px 4px 0 0 #111111;
+  --shadow-adesivo-sm: 2px 2px 0 0 #111111;
+}
+
+@layer base {
+  html {
+    background: var(--color-verde);
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--color-bege);
+    background-color: var(--color-verde);
+    /* padrão sutil de paraquedas, ~6% de opacidade */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%23efd8ac' stroke-opacity='.06' stroke-width='2'%3E%3Cpath d='M30 44a22 22 0 0 1 44 0z'/%3E%3Cpath d='M30 44l14 22M74 44L60 66M52 44v22M44 66h16'/%3E%3Cpath d='M100 110a16 16 0 0 1 32 0z'/%3E%3Cpath d='M100 110l10 16M132 110l-10 16M116 110v16'/%3E%3C/g%3E%3C/svg%3E");
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-ambar);
+    outline-offset: 2px;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-titulo);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+}
+
+@layer utilities {
+  .shimmer {
+    background: linear-gradient(90deg, #dfc48f 25%, #efd8ac 50%, #dfc48f 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite linear;
+  }
+  @keyframes shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+  }
+}
