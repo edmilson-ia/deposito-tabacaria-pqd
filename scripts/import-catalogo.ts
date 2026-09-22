@@ -125,7 +125,10 @@ async function main() {
   const { data, meta } = Papa.parse<Linha>(texto, {
     header: true,
     skipEmptyLines: true,
-    transformHeader: (h) => ALIAS[normalizarCabecalho(h)] ?? normalizarCabecalho(h),
+    // A planilha do cliente tem a coluna de "un/pack" sem título (a 7ª coluna, logo após a
+    // Descrição) — sem essa regra ela cai numa chave em branco e a unidade vira "inferida pelo
+    // texto do nome", que erra quando o produto não tem "pack"/"cx" no próprio nome.
+    transformHeader: (h, i) => (i === 6 && normalizarCabecalho(h) === '' ? 'unidade' : ALIAS[normalizarCabecalho(h)] ?? normalizarCabecalho(h)),
   })
   const colunas = new Set(meta.fields ?? [])
   const faltando = (['produto', 'valor'] as const).filter((c) => !colunas.has(c))
