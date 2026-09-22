@@ -104,22 +104,24 @@ npm run imagens:apply   # 2º: baixa, reduz a 900 px, converte p/ WebP, envia ao
 - Por padrão não troca fotos que já existem (use `-- --force`). Rodar de novo não duplica (mesmo nome de arquivo no Storage).
 - Também dá para enviar foto produto a produto no admin (o filtro **Sem foto** mostra o que falta).
 
-## 5. Criar o administrador (login por e-mail, com "Esqueci minha senha")
+## 5. Criar o administrador (login por e-mail ou telefone, com "Esqueci minha senha")
 
-O login do painel (`/admin`) é por **e-mail e senha**, com recuperação de senha por e-mail. Contas antigas criadas com um e-mail interno de telefone (`<DDD+número>@admin.example.com`) ainda entram digitando o telefone, mas **não recebem** e-mail de recuperação — prefira sempre um e-mail real.
+O login do painel (`/admin`) aceita **e-mail** ou **telefone**; a senha e a recuperação sempre usam o **e-mail real cadastrado na conta**. O telefone fica salvo em `admins.telefone` e é traduzido para esse e-mail pela função `email_login_por_telefone` (migration `0004_admin_login_telefone_email_real.sql`) — dá para trocar o e-mail da conta a qualquer momento (Authentication → Users → editar) sem mexer em código nem quebrar o login por telefone.
 
 1. Supabase → **Authentication → Users → Add user → Create new user**.
-   - Email: o e-mail **real** do administrador (precisa receber mensagens)
+   - Email: o e-mail **real** do administrador (precisa receber mensagens; pode ser provisório e trocado depois)
    - Password: uma senha forte (defina na hora, não deixe escrita em nenhum arquivo)
    - Marque **Auto Confirm User**
-2. No **SQL Editor**, autorize esse usuário como admin (troque pelo e-mail usado acima):
+2. No **SQL Editor**, autorize esse usuário como admin e, se quiser permitir login por telefone, salve o telefone (troque pelo e-mail e telefone reais):
 
 ```sql
-insert into public.admins (user_id)
-select id from auth.users where email = 'admin@seudominio.com';
+insert into public.admins (user_id, telefone)
+select id, '21999998888' from auth.users where email = 'admin@seudominio.com';
 ```
 
-3. Acesse `/admin` e entre com esse e-mail e a senha.
+3. Acesse `/admin` e entre com esse e-mail (ou o telefone salvo) e a senha.
+
+**Contas antigas** (criadas antes da 0004, com e-mail interno `<DDD+número>@admin.example.com`): continuam entrando por telefone normalmente, mas **não recebem e-mail de recuperação** até o e-mail da conta virar um e-mail real — troque em Authentication → Users → editar e-mail, sem precisar recriar a conta.
 
 **Esqueci minha senha:** clique no link na tela de login (`/admin/esqueci`), informe o e-mail e siga o link recebido — ele abre `/admin/redefinir`, onde se define a nova senha. Válido só no mesmo navegador/aparelho que pediu a recuperação.
 

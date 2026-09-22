@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { CampoSenha } from '@/components/ui/campo-senha'
 import { useAuth } from '@/lib/auth'
 import { novaSenhaSchema } from '@/lib/schemas'
 import { NOME_LOJA } from '@/lib/utils'
@@ -67,7 +68,7 @@ export default function AdminRedefinir() {
               <label htmlFor="nova-senha" className="mb-1 block text-sm font-extrabold">
                 Nova senha
               </label>
-              <input id="nova-senha" type="password" autoComplete="new-password" value={senha} onChange={(e) => { setSenha(e.target.value); setErros({}) }} aria-invalid={!!erros.senha} className={cls(erros.senha)} />
+              <CampoSenha id="nova-senha" autoComplete="new-password" value={senha} onChange={(e) => { setSenha(e.target.value); setErros({}) }} aria-invalid={!!erros.senha} className={cls(erros.senha)} />
               <p className={erros.senha ? 'mt-1 text-xs font-bold text-red-800' : 'mt-1 text-xs text-preto/70'} role={erros.senha ? 'alert' : undefined}>
                 {erros.senha ?? 'Mínimo de 8 caracteres, com letras e números.'}
               </p>
@@ -76,7 +77,7 @@ export default function AdminRedefinir() {
               <label htmlFor="confirmar-senha" className="mb-1 block text-sm font-extrabold">
                 Repita a nova senha
               </label>
-              <input id="confirmar-senha" type="password" autoComplete="new-password" value={confirmar} onChange={(e) => { setConfirmar(e.target.value); setErros({}) }} aria-invalid={!!erros.confirmar} className={cls(erros.confirmar)} />
+              <CampoSenha id="confirmar-senha" autoComplete="new-password" value={confirmar} onChange={(e) => { setConfirmar(e.target.value); setErros({}) }} aria-invalid={!!erros.confirmar} className={cls(erros.confirmar)} />
               {erros.confirmar && (
                 <p role="alert" className="mt-1 text-xs font-bold text-red-800">
                   {erros.confirmar}

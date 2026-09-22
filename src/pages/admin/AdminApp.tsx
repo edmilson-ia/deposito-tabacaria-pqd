@@ -1,10 +1,11 @@
-import { ClipboardList, LogOut, Package, Settings, Tags } from 'lucide-react'
+import { ClipboardList, LogOut, Package, Settings, Tags, UserCog } from 'lucide-react'
 import { useEffect } from 'react'
 import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useLicenca } from '@/hooks/useLicenca'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { cn, NOME_LOJA } from '@/lib/utils'
+import AdminConta from './AdminConta'
 import AdminEsqueci from './AdminEsqueci'
 import AdminLogin from './AdminLogin'
 import AdminRedefinir from './AdminRedefinir'
@@ -18,6 +19,7 @@ const ABAS = [
   { to: '/admin/categorias', label: 'Categorias', icon: Tags },
   { to: '/admin/pedidos', label: 'Pedidos', icon: ClipboardList },
   { to: '/admin/configuracoes', label: 'Loja', icon: Settings },
+  { to: '/admin/conta', label: 'Minha conta', icon: UserCog },
 ]
 
 function formatarData(iso: string) {
@@ -168,6 +170,7 @@ export default function AdminApp() {
           <Route path="categorias" element={<Categorias />} />
           <Route path="pedidos" element={<Pedidos />} />
           <Route path="configuracoes" element={<Configuracoes />} />
+          <Route path="conta" element={<AdminConta />} />
         </Route>
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>

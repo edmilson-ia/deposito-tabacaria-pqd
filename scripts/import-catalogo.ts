@@ -36,6 +36,7 @@ const CATEGORIA_MAP: Record<string, string> = {
   'Vinhos Chopp': 'Vinhos e Chopp',
   Cigarros: 'Tabacaria',
   Acessórios: 'Tabacaria',
+  Tabacária: 'Tabacaria', // erro de digitação recorrente na planilha do cliente (com acento)
 }
 const ORDEM_CATEGORIAS = [
   'Cervejas', 'Refrigerantes', 'Energéticos', 'Bebidas Mistas', 'Vinhos e Chopp',
@@ -44,6 +45,8 @@ const ORDEM_CATEGORIAS = [
 
 const limpar = (s: string) => s.replace(/\s+/g, ' ').trim()
 const semAcento = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+/** Cabeçalho sem o que vem depois de "(", tipo "Valor (R$)" -> "valor". */
+const normalizarCabecalho = (h: string) => semAcento(h.split('(')[0])
 const chave = (nome: string, un: string) => `${semAcento(nome)}|${un}`
 
 const argValor = (nome: string) => process.argv.find((a) => a.startsWith(`--${nome}=`))?.slice(nome.length + 3)
@@ -122,7 +125,7 @@ async function main() {
   const { data, meta } = Papa.parse<Linha>(texto, {
     header: true,
     skipEmptyLines: true,
-    transformHeader: (h) => ALIAS[semAcento(h)] ?? semAcento(h),
+    transformHeader: (h) => ALIAS[normalizarCabecalho(h)] ?? normalizarCabecalho(h),
   })
   const colunas = new Set(meta.fields ?? [])
   const faltando = (['produto', 'valor'] as const).filter((c) => !colunas.has(c))

@@ -13,6 +13,8 @@ interface AuthValue {
   /** Envia o link de recuperação. Sempre devolve null em caso de "não existe" (não revela quem é admin). */
   pedirRecuperacao: (email: string) => Promise<string | null>
   definirSenha: (senha: string) => Promise<string | null>
+  /** Pede a troca do e-mail da conta logada. O Supabase manda um link de confirmação para o e-mail NOVO. */
+  definirEmail: (novoEmail: string) => Promise<string | null>
   sair: () => Promise<void>
 }
 
@@ -90,13 +92,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return 'Não foi possível salvar a nova senha agora. Tente novamente.'
   }, [])
 
+  const definirEmail = useCallback(async (novoEmail: string) => {
+    const { error } = await supabase.auth.updateUser({ email: novoEmail }, { emailRedirectTo: `${window.location.origin}/admin/login` })
+    if (!error) return null
+    if (/same email|different from the old/i.test(error.message)) return 'Esse já é o e-mail atual da conta.'
+    if (/already registered|already exists|already been registered/i.test(error.message)) return 'Esse e-mail já está sendo usado por outra conta.'
+    if (/rate limit|too many|seconds/i.test(error.message)) return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.'
+    if (/fetch|network/i.test(error.message)) return 'Sem conexão com o servidor. Tente novamente.'
+    return 'Não foi possível trocar o e-mail agora. Tente novamente.'
+  }, [])
+
   const sair = useCallback(async () => {
     await supabase.auth.signOut()
   }, [])
 
   const value = useMemo<AuthValue>(
-    () => ({ carregando: !sessaoPronta || !adminPronto, sessao, admin, master, entrar, pedirRecuperacao, definirSenha, sair }),
-    [sessaoPronta, adminPronto, sessao, admin, master, entrar, pedirRecuperacao, definirSenha, sair],
+    () => ({ carregando: !sessaoPronta || !adminPronto, sessao, admin, master, entrar, pedirRecuperacao, definirSenha, definirEmail, sair }),
+    [sessaoPronta, adminPronto, sessao, admin, master, entrar, pedirRecuperacao, definirSenha, definirEmail, sair],
   )
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

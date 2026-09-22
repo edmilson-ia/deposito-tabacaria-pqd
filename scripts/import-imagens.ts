@@ -24,7 +24,13 @@ import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import sharp from 'sharp'
 
-const PASTA_ID = '1nGBUfN2HHFFqZEENWIQhje4nViKYdS5D'
+const idDaPasta = (txt: string) => txt.match(/\/folders\/([\w-]+)/)?.[1] ?? txt.trim()
+const argValor = (nome: string) => process.argv.find((a) => a.startsWith(`--${nome}=`))?.slice(nome.length + 3)
+const PASTA_ID_PADRAO = '1nGBUfN2HHFFqZEENWIQhje4nViKYdS5D'
+const PASTA_ID = (() => {
+  const arg = argValor('pasta')
+  return arg ? idDaPasta(arg) : PASTA_ID_PADRAO
+})()
 const MAPA_PATH = 'scripts/imagens-mapa.json'
 
 type Unidade = 'un' | 'cx' | 'fardo'

@@ -3,8 +3,9 @@ import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { CampoSenha } from '@/components/ui/campo-senha'
 import { useAuth } from '@/lib/auth'
-import { resolverIdentificador } from '@/lib/login'
+import { emailPorTelefone, normalizarIdentificador } from '@/lib/login'
 import { NOME_LOJA } from '@/lib/utils'
 
 export default function AdminLogin({ destino = '/admin', titulo = 'Painel administrativo' }: { destino?: string; titulo?: string }) {
@@ -22,14 +23,22 @@ export default function AdminLogin({ destino = '/admin', titulo = 'Painel admini
 
   async function enviar(e: FormEvent) {
     e.preventDefault()
-    const id = resolverIdentificador(identificador)
+    const id = normalizarIdentificador(identificador)
     if ('erro' in id || !senha) {
       setErros({ identificador: 'erro' in id ? id.erro : undefined, senha: senha ? undefined : 'Informe a senha' })
       return
     }
     setErros({})
     setEnviando(true)
-    const erro = await entrar(id.email, senha)
+    const email = id.tipo === 'email' ? id.email : await emailPorTelefone(id.telefone)
+    if (!email) {
+      setEnviando(false)
+      const erro = 'E-mail (ou telefone) ou senha incorretos.'
+      setErros({ geral: erro })
+      toast.error(erro)
+      return
+    }
+    const erro = await entrar(email, senha)
     setEnviando(false)
     if (erro) {
       setErros({ geral: erro })
@@ -78,7 +87,7 @@ export default function AdminLogin({ destino = '/admin', titulo = 'Painel admini
           <label htmlFor="senha" className="mb-1 block text-sm font-extrabold">
             Senha
           </label>
-          <input id="senha" type="password" autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} aria-invalid={!!erros.senha} className={cls(erros.senha)} />
+          <CampoSenha id="senha" autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} aria-invalid={!!erros.senha} className={cls(erros.senha)} />
           {erros.senha && (
             <p role="alert" className="mt-1 text-xs font-bold text-red-800">
               {erros.senha}
