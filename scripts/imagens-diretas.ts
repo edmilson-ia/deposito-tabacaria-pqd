@@ -28,6 +28,18 @@ const ITENS: { nome: string; unidade: 'un' | 'cx'; arquivoId: string; force?: bo
   { nome: 'Antarctica Latão', unidade: 'cx', arquivoId: '1ZmHT1HVIFF7lzcKdT8dN0gfHxSiJ2Uk9' },
   { nome: 'Guaraná Antarctica 350ml Zero', unidade: 'un', arquivoId: '1t2z010F7d4_SIDdkjqUzqCqHFCiRu4c-' },
   { nome: 'Antarctica Latão', unidade: 'un', arquivoId: '1M8kkR7KfAHQ2_8vJg8fVSv--sOsojyiI' },
+  { nome: 'White Horse', unidade: 'un', arquivoId: '13zS2y3vHntIk66MID5ZCgCCDE6GkKZB9' },
+  { nome: "Buchanan's", unidade: 'un', arquivoId: '1mSrp6Z9nwPQqiT7O_yZrGsOGGhJBFXD2' },
+  { nome: 'Old Parr', unidade: 'un', arquivoId: '1vPT9wNvg1DOWGSWjeYxi0TQrxBe__F38' },
+  { nome: 'Chivas', unidade: 'un', arquivoId: '1v4xPy7XMblM2G-C8Cy_v2vWF8T4u0EbU' },
+  { nome: "Jack Daniel's Old No. 7", unidade: 'un', arquivoId: '1va_mPWF4gqeIdotstLW41-anKDCsG6FR' },
+  { nome: "Jack Daniel's Fire", unidade: 'un', arquivoId: '1WAG5rQeK-lg7rP-jjBx1q_dP7SEwV6d8' },
+  { nome: "Jack Daniel's Honey", unidade: 'un', arquivoId: '1fnBGVzU-qd0HsZTNiSM03Lwwup-MBS1R' },
+  { nome: "Jack Daniel's Apple", unidade: 'un', arquivoId: '1eo6eys5ShmeX6WmGhi2wvKRYeGBC9Yhl' },
+  { nome: 'Johnnie Walker Red Label', unidade: 'un', arquivoId: '1Z-JMKNNYGJd-IEzUSQNFLZTYIB-VoCwL' },
+  { nome: 'Johnnie Walker Black Label', unidade: 'un', arquivoId: '1yy3GOxmH-XoFfygAvW4_452zc2TaiyUN' },
+  { nome: 'Johnnie Walker Gold Label', unidade: 'un', arquivoId: '1V4zd4Ag3WTYSDMFdsQc3BlE0aXq5KJU_' },
+  { nome: 'Johnnie Walker Double Black', unidade: 'un', arquivoId: '1v7inonVWqZW92Mxkvi-jGHtEKojEDRZe' },
 ]
 
 async function main() {
