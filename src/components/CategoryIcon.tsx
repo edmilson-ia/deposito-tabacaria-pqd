@@ -6,11 +6,16 @@ const ICONES: Record<string, LucideIcon> = {
   Energéticos: Zap,
   'Bebidas Mistas': GlassWater,
   'Vinhos e Chopp': Wine,
+  'Chopp de Vinho': Wine,
   'Águas e Sucos': GlassWater,
   Gelo: Snowflake,
   Tabacaria: Cigarette,
   'Doces e Balas': Candy,
   Alimentos: Coffee,
+  Whisky: GlassWater,
+  Gin: GlassWater,
+  Licor: GlassWater,
+  Vodka: GlassWater,
 }
 
 export function CategoryIcon({ nome, className }: { nome: string; className?: string }) {

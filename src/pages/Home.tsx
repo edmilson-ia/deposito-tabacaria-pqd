@@ -9,12 +9,12 @@ import type { CategoriaComContagem } from '@/lib/types'
 import { cn, NOME_LOJA } from '@/lib/utils'
 
 /** Categorias em destaque na tela inicial (na ordem). O restante fica em "Ver todas as categorias". */
-const DESTAQUES = ['Cervejas', 'Refrigerantes', 'Chopp de Vinho', 'Energéticos', 'Tabacaria']
+const DESTAQUES = ['Cervejas', 'Refrigerantes', 'Chopp de Vinho', 'Energéticos', 'Tabacaria', 'Whisky']
 
 function escolherDestaques(todas: CategoriaComContagem[]): CategoriaComContagem[] {
   const achadas = DESTAQUES.map((nome) => todas.find((c) => c.nome === nome)).filter((c): c is CategoriaComContagem => !!c)
-  // Se as categorias foram renomeadas no admin, não deixa a tela vazia: usa as 5 primeiras da ordem.
-  return achadas.length > 0 ? achadas : todas.slice(0, 5)
+  // Se as categorias foram renomeadas no admin, não deixa a tela vazia: usa as 6 primeiras da ordem.
+  return achadas.length > 0 ? achadas : todas.slice(0, 6)
 }
 
 export default function Home() {
@@ -53,7 +53,7 @@ export default function Home() {
         ) : (
           <ul className="grid grid-cols-2 gap-3">
             {categorias.isPending
-              ? Array.from({ length: 5 }, (_, i) => <li key={i} className="shimmer h-16 rounded-xl border-2 border-preto" aria-hidden />)
+              ? Array.from({ length: 6 }, (_, i) => <li key={i} className="shimmer h-16 rounded-xl border-2 border-preto" aria-hidden />)
               : escolherDestaques(categorias.data ?? []).map((c) => (
                   <li key={c.id}>
                     <Link
