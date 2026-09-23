@@ -77,7 +77,7 @@ export function CartSheet() {
     observacoes: '',
     ...lerCliente(),
   }))
-  const [confirmado, setConfirmado] = useState<{ id: number; url: string } | null>(null)
+  const [confirmado, setConfirmado] = useState<{ numero: number; url: string } | null>(null)
 
   const set = <K extends keyof CheckoutInput>(k: K, v: CheckoutInput[K]) => {
     setForm((f) => ({ ...f, [k]: v }))
@@ -131,12 +131,12 @@ export function CartSheet() {
 
     setEnviando(true)
     try {
-      const pedidoId = await criarPedido(dados, itens)
-      const texto = montarMensagem({ pedidoId, itens, subtotal, taxaEntrega: itens.length ? taxa : 0, total, dados })
+      const pedido = await criarPedido(dados, itens)
+      const texto = montarMensagem({ numeroDiario: pedido.numeroDiario, itens, subtotal, taxaEntrega: itens.length ? taxa : 0, total, dados })
       const url = urlWhatsapp(numero, texto)!
       salvarCliente({ nome: dados.nome, telefone: form.telefone, endereco: dados.endereco })
       limpar()
-      setConfirmado({ id: pedidoId, url })
+      setConfirmado({ numero: pedido.numeroDiario, url })
       setEtapa('ok')
       // Pode ser bloqueado pelo navegador; a tela de confirmação tem o botão como garantia.
       window.open(url, '_blank', 'noopener,noreferrer')
@@ -170,7 +170,7 @@ export function CartSheet() {
         {etapa === 'ok' && confirmado ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
             <CheckCircle2 className="h-14 w-14 text-verde" aria-hidden />
-            <p className="font-titulo text-3xl">Pedido #{confirmado.id} registrado!</p>
+            <p className="font-titulo text-3xl">Pedido #{confirmado.numero} registrado!</p>
             <p className="text-sm">Se o WhatsApp não abriu sozinho, toque no botão abaixo para enviar a mensagem do pedido.</p>
             <a
               href={confirmado.url}

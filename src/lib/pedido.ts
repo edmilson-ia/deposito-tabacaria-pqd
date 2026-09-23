@@ -4,11 +4,16 @@ import { supabase } from './supabase'
 
 export class PedidoError extends Error {}
 
+export interface PedidoCriado {
+  id: number
+  numeroDiario: number
+}
+
 /**
  * Salva o pedido via RPC (o servidor recalcula preços e total).
  * Só é chamado com o carrinho ainda intacto: quem chama limpa o carrinho apenas se isto retornar.
  */
-export async function criarPedido(dados: CheckoutDados, itens: CartItem[]): Promise<number> {
+export async function criarPedido(dados: CheckoutDados, itens: CartItem[]): Promise<PedidoCriado> {
   const troco =
     dados.forma_pagamento === 'dinheiro' && dados.troco_para ? parseValor(dados.troco_para) : null
 
@@ -32,6 +37,9 @@ export async function criarPedido(dados: CheckoutDados, itens: CartItem[]): Prom
     }
     throw new PedidoError('Não foi possível registrar o pedido agora. Seu carrinho foi mantido; tente novamente.')
   }
-  if (typeof data !== 'number') throw new PedidoError('Resposta inesperada do servidor. Tente novamente.')
-  return data
+  const linha = data as { id?: unknown; numero_diario?: unknown } | null
+  if (typeof linha?.id !== 'number' || typeof linha?.numero_diario !== 'number') {
+    throw new PedidoError('Resposta inesperada do servidor. Tente novamente.')
+  }
+  return { id: linha.id, numeroDiario: linha.numero_diario }
 }

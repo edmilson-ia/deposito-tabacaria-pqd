@@ -3,7 +3,7 @@ import { FORMAS_PAGAMENTO, parseValor, type CheckoutDados } from './schemas'
 import { formatBRL, NOME_LOJA, UNIDADE_SIGLA } from './utils'
 
 interface Resumo {
-  pedidoId: number
+  numeroDiario: number
   itens: CartItem[]
   subtotal: number
   taxaEntrega: number
@@ -11,7 +11,7 @@ interface Resumo {
   dados: CheckoutDados
 }
 
-export function montarMensagem({ pedidoId, itens, subtotal, taxaEntrega, total, dados }: Resumo): string {
+export function montarMensagem({ numeroDiario, itens, subtotal, taxaEntrega, total, dados }: Resumo): string {
   const linhas = itens.map((i) => `• ${i.quantidade}x ${i.nome} (${UNIDADE_SIGLA[i.unidade]}) — ${formatBRL(i.quantidade * i.preco)}`)
   const pagamento =
     dados.forma_pagamento === 'dinheiro' && dados.troco_para
@@ -19,7 +19,7 @@ export function montarMensagem({ pedidoId, itens, subtotal, taxaEntrega, total, 
       : FORMAS_PAGAMENTO[dados.forma_pagamento]
 
   return [
-    `Olá! Quero fazer um pedido (#${pedidoId}) na ${NOME_LOJA}:`,
+    `Olá! Quero fazer um pedido (#${numeroDiario}) na ${NOME_LOJA}:`,
     '',
     ...linhas,
     '',

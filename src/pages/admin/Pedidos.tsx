@@ -28,7 +28,7 @@ function CartaoPedido({ p }: { p: PedidoAdmin }) {
   return (
     <li className="rounded-xl border-2 border-preto bg-bege p-4 text-preto shadow-adesivo-sm">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="font-titulo text-2xl leading-none">#{p.id}</span>
+        <span className="font-titulo text-2xl leading-none">#{p.numero_diario ?? p.id}</span>
         <span className={cn('rounded-md border-2 border-preto px-2 py-0.5 text-xs font-extrabold uppercase', COR[p.status])}>{STATUS_LABEL[p.status]}</span>
         <span className="text-xs text-preto/70">{formatarData(p.criado_em)}</span>
         <span className="ml-auto text-lg font-extrabold">{formatBRL(p.total)}</span>
@@ -65,7 +65,7 @@ function CartaoPedido({ p }: { p: PedidoAdmin }) {
             atualizar.mutate(
               { id: p.id, status: e.target.value as StatusPedido },
               {
-                onSuccess: () => toast.success(`Pedido #${p.id}: ${STATUS_LABEL[e.target.value as StatusPedido]}`),
+                onSuccess: () => toast.success(`Pedido #${p.numero_diario ?? p.id}: ${STATUS_LABEL[e.target.value as StatusPedido]}`),
                 onError: (err) => toast.error(`Não foi possível atualizar: ${err.message}`),
               },
             )

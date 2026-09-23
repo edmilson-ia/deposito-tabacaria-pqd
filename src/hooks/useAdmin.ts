@@ -13,6 +13,7 @@ export const STATUS_LABEL: Record<StatusPedido, string> = {
 
 export interface PedidoAdmin {
   id: number
+  numero_diario: number | null
   nome_cliente: string
   telefone: string
   endereco: string
@@ -102,7 +103,7 @@ export function useAdminPedidos(status: StatusPedido | 'todos') {
       let q = supabase
         .from('pedidos')
         .select(
-          'id, nome_cliente, telefone, endereco, status, total, taxa_entrega, forma_pagamento, troco_para, observacoes, criado_em, itens_pedido(id, nome_produto, quantidade, preco_unitario)',
+          'id, numero_diario, nome_cliente, telefone, endereco, status, total, taxa_entrega, forma_pagamento, troco_para, observacoes, criado_em, itens_pedido(id, nome_produto, quantidade, preco_unitario)',
         )
         .order('criado_em', { ascending: false })
         .limit(200)
