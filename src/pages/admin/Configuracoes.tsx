@@ -14,7 +14,7 @@ const inputCls = (erro?: string) =>
 export default function Configuracoes() {
   const config = useConfig()
   const salvar = useSalvarConfig()
-  const [f, setF] = useState({ nome_loja: '', whatsapp_numero: '', taxa_entrega: '' })
+  const [f, setF] = useState({ nome_loja: '', whatsapp_numero: '', taxa_entrega: '', grupo_promocao_url: '' })
   const [erros, setErros] = useState<Partial<Record<keyof typeof f, string>>>({})
 
   useEffect(() => {
@@ -23,6 +23,7 @@ export default function Configuracoes() {
         nome_loja: config.data.nome_loja ?? '',
         whatsapp_numero: config.data.whatsapp_numero ?? '',
         taxa_entrega: (config.data.taxa_entrega ?? '0').replace('.', ','),
+        grupo_promocao_url: config.data.grupo_promocao_url ?? '',
       })
     }
   }, [config.data])
@@ -39,7 +40,12 @@ export default function Configuracoes() {
     }
     setErros({})
     salvar.mutate(
-      { nome_loja: r.data.nome_loja, whatsapp_numero: r.data.whatsapp_numero, taxa_entrega: String(r.data.taxa_entrega) },
+      {
+        nome_loja: r.data.nome_loja,
+        whatsapp_numero: r.data.whatsapp_numero,
+        taxa_entrega: String(r.data.taxa_entrega),
+        grupo_promocao_url: r.data.grupo_promocao_url,
+      },
       {
         onSuccess: () => toast.success('Configurações salvas'),
         onError: (err) => toast.error(`Não foi possível salvar: ${err.message}`),
@@ -77,6 +83,7 @@ export default function Configuracoes() {
           {campo('nome_loja', 'Nome da loja', 'Aparece no site e na mensagem do WhatsApp.')}
           {campo('whatsapp_numero', 'WhatsApp da loja', 'Com DDI e DDD, só números. Ex.: 5521999999999. É para onde os pedidos são enviados.', { inputMode: 'numeric', placeholder: '5521999999999' })}
           {campo('taxa_entrega', 'Taxa de entrega (R$)', 'Deixe 0 para "a combinar com o cliente" (o carrinho e o WhatsApp avisam). Se informar um valor, ele é somado ao total de todo pedido.', { inputMode: 'decimal', placeholder: '0,00' })}
+          {campo('grupo_promocao_url', 'Link do grupo de promoção (WhatsApp)', 'Cole aqui o link de convite do grupo. Deixe em branco para o botão "Promoção" não aparecer na tela inicial.', { placeholder: 'https://chat.whatsapp.com/...' })}
           <Button type="submit" disabled={salvar.isPending} className="h-12 w-full text-base">
             {salvar.isPending ? <><Loader2 className="h-5 w-5 animate-spin" aria-hidden /> Salvando…</> : 'Salvar configurações'}
           </Button>

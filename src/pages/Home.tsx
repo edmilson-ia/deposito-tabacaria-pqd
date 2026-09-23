@@ -1,9 +1,9 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Megaphone } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { ErrorState } from '@/components/States'
 import { buttonVariants } from '@/components/ui/button'
-import { useCategorias, useTotalProdutos } from '@/hooks/useCatalogo'
+import { useCategorias, useConfig, useTotalProdutos } from '@/hooks/useCatalogo'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import type { CategoriaComContagem } from '@/lib/types'
 import { cn, NOME_LOJA } from '@/lib/utils'
@@ -21,6 +21,8 @@ export default function Home() {
   usePageTitle()
   const categorias = useCategorias()
   const total = useTotalProdutos()
+  const config = useConfig()
+  const grupoPromocao = config.data?.grupo_promocao_url
 
   return (
     <div className="space-y-5">
@@ -42,6 +44,16 @@ export default function Home() {
           Ver catálogo completo{total.data ? ` · ${total.data} itens` : ''}
           <ArrowRight className="h-5 w-5" aria-hidden />
         </Link>
+        {grupoPromocao && (
+          <a
+            href={grupoPromocao}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(buttonVariants({ variant: 'outline' }), 'h-12 w-full max-w-sm text-base')}
+          >
+            <Megaphone className="h-5 w-5" aria-hidden /> Promoção
+          </a>
+        )}
       </section>
 
       <section aria-labelledby="cat-titulo">

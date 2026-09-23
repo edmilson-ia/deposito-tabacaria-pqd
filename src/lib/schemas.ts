@@ -73,6 +73,10 @@ export const configSchema = z.object({
     .string()
     .transform((s) => (s.trim() === '' ? 0 : parseValor(s)))
     .refine((n) => Number.isFinite(n) && n >= 0 && n < 10000, 'Taxa inválida'),
+  grupo_promocao_url: z
+    .string()
+    .trim()
+    .refine((s) => s === '' || /^https:\/\/(chat\.whatsapp\.com|wa\.me)\//.test(s), 'Cole o link do grupo do WhatsApp (começa com https://chat.whatsapp.com/)'),
 })
 
 export const categoriaSchema = z.object({
