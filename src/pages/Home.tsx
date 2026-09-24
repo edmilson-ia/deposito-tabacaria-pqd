@@ -9,7 +9,7 @@ import type { CategoriaComContagem } from '@/lib/types'
 import { cn, NOME_LOJA } from '@/lib/utils'
 
 /** Categorias em destaque na tela inicial (na ordem). O restante fica em "Ver todas as categorias". */
-const DESTAQUES = ['Cervejas', 'Refrigerantes', 'Chopp de Vinho', 'Energéticos', 'Tabacaria', 'Whisky']
+const DESTAQUES = ['Cervejas', 'Refrigerantes', 'Vinhos e Chopp de Vinhos', 'Energéticos', 'Tabacaria', 'Whisky']
 
 function escolherDestaques(todas: CategoriaComContagem[]): CategoriaComContagem[] {
   const achadas = DESTAQUES.map((nome) => todas.find((c) => c.nome === nome)).filter((c): c is CategoriaComContagem => !!c)
