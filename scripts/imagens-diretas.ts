@@ -43,6 +43,7 @@ const ITENS: { nome: string; unidade: 'un' | 'cx'; arquivoId: string; force?: bo
   { nome: 'Água 1,5L', unidade: 'un', arquivoId: '1H0KXAmBdIrMbFUNBJ6H9cEm2Gb732f0b' },
   { nome: 'Água sem gás 510ml', unidade: 'un', arquivoId: '1BOPDicgjiGD5IJdFBKt7vTzFnr43uYei', force: true },
   { nome: 'Água Com Gás 510ml', unidade: 'un', arquivoId: '1G6fkDeeh6db2endoSMtAqETIZmGB6k7r', force: true },
+  { nome: 'Gelo Filtrado', unidade: 'un', arquivoId: '1KqnJ7MbVsZN7MMhoEQo0BapMHH5iBGaY' },
 ]
 
 async function main() {
