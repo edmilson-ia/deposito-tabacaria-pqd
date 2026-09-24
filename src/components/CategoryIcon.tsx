@@ -6,6 +6,7 @@ const ICONES: Record<string, LucideIcon> = {
   Energéticos: Zap,
   'Bebidas Mistas': GlassWater,
   'Vinhos e Chopp': Wine,
+  'Vinhos e Chopp de Vinhos': Wine,
   'Chopp de Vinho': Wine,
   'Águas e Sucos': GlassWater,
   Gelo: Snowflake,

@@ -33,13 +33,16 @@ type Existente = { id: number; nome: string; unidade: Unidade; preco: number; de
 
 // Ajuste aqui se quiser outros nomes de categoria.
 const CATEGORIA_MAP: Record<string, string> = {
-  'Vinhos Chopp': 'Vinhos e Chopp',
+  'Vinhos Chopp': 'Vinhos e Chopp de Vinhos',
   Cigarros: 'Tabacaria',
   Acessórios: 'Tabacaria',
   Tabacária: 'Tabacaria', // erro de digitação recorrente na planilha do cliente (com acento)
+  // planilha de 2026-09-24 (categorias em MAIÚSCULAS, chave sem acento e em minúsculas)
+  whisky: 'Whisky', gin: 'Gin', vodka: 'Vodka', cachaca: 'Cachaça', vinho: 'Vinhos e Chopp de Vinhos',
+  cigarro: 'Tabacaria', 'bebidas doces': 'Licor',
 }
 const ORDEM_CATEGORIAS = [
-  'Cervejas', 'Refrigerantes', 'Energéticos', 'Bebidas Mistas', 'Vinhos e Chopp',
+  'Cervejas', 'Refrigerantes', 'Energéticos', 'Bebidas Mistas', 'Vinhos e Chopp de Vinhos',
   'Águas e Sucos', 'Gelo', 'Tabacaria', 'Doces e Balas', 'Alimentos', 'Diversos',
 ]
 
@@ -67,7 +70,7 @@ function categoriaFinal(cat: string, nome: string): string {
   if (c.toLowerCase() === 'outros') {
     return /isqueiro|carv[aã]o/i.test(nome) ? 'Tabacaria' : 'Diversos'
   }
-  return CATEGORIA_MAP[c] ?? c
+  return CATEGORIA_MAP[c] ?? CATEGORIA_MAP[semAcento(c)] ?? c
 }
 
 /** Coluna "unidade" explícita: un | pack | cx | caixa | fardo. Devolve null se não reconhecer. */
