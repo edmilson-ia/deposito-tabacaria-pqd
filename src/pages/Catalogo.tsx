@@ -53,6 +53,7 @@ export default function Catalogo() {
       },
       { replace: true },
     )
+    window.scrollTo({ top: 0 })
   }
 
   const chip = (ativo: boolean) =>

@@ -40,6 +40,9 @@ const ITENS: { nome: string; unidade: 'un' | 'cx'; arquivoId: string; force?: bo
   { nome: 'Johnnie Walker Black Label', unidade: 'un', arquivoId: '1yy3GOxmH-XoFfygAvW4_452zc2TaiyUN' },
   { nome: 'Johnnie Walker Gold Label', unidade: 'un', arquivoId: '1V4zd4Ag3WTYSDMFdsQc3BlE0aXq5KJU_' },
   { nome: 'Johnnie Walker Double Black', unidade: 'un', arquivoId: '1v7inonVWqZW92Mxkvi-jGHtEKojEDRZe' },
+  { nome: 'Água 1,5L', unidade: 'un', arquivoId: '1H0KXAmBdIrMbFUNBJ6H9cEm2Gb732f0b' },
+  { nome: 'Água sem gás 510ml', unidade: 'un', arquivoId: '1BOPDicgjiGD5IJdFBKt7vTzFnr43uYei', force: true },
+  { nome: 'Água Com Gás 510ml', unidade: 'un', arquivoId: '1G6fkDeeh6db2endoSMtAqETIZmGB6k7r', force: true },
 ]
 
 async function main() {
