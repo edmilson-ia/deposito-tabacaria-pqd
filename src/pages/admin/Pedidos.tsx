@@ -1,9 +1,10 @@
-import { RefreshCw } from 'lucide-react'
+import { Printer, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { STATUS_LABEL, useAdminPedidos, useAtualizarStatus, type PedidoAdmin, type StatusPedido } from '@/hooks/useAdmin'
+import { imprimirCupom } from '@/lib/cupom'
 import { FORMAS_PAGAMENTO } from '@/lib/schemas'
 import { cn, formatBRL } from '@/lib/utils'
 
@@ -74,6 +75,13 @@ function CartaoPedido({ p }: { p: PedidoAdmin }) {
         >
           {ORDEM_STATUS.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
         </select>
+        <Button
+          variant="outline"
+          className="ml-auto h-10"
+          onClick={() => { if (!imprimirCupom(p)) toast.error('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.') }}
+        >
+          <Printer className="h-4 w-4" aria-hidden /> Imprimir cupom
+        </Button>
       </div>
     </li>
   )
