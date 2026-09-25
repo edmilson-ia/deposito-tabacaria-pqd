@@ -115,6 +115,16 @@ export function CartSheet() {
     return () => clearTimeout(t)
   }, [etapa, enderecoPronto, form.endereco, form.numero, form.bairro, form.cep])
 
+  const temEnderecoPreenchido = !!(form.endereco || form.numero || form.bairro || form.complemento || form.cep)
+
+  /** Limpa os campos de endereço para o cliente digitar outro (não mexe em nome, telefone e pagamento). */
+  function usarOutroEndereco() {
+    setForm((f) => ({ ...f, endereco: '', numero: '', bairro: '', complemento: '', cep: '' }))
+    setErros((e) => ({ ...e, endereco: undefined, numero: undefined, bairro: undefined, complemento: undefined, cep: undefined }))
+    setResumoEndereco(false)
+    setTimeout(() => document.getElementById('endereco')?.focus(), 0)
+  }
+
   function aoMudarAberto(open: boolean) {
     if (open) return
     fechar()
@@ -258,12 +268,22 @@ export function CartSheet() {
                     <div className="rounded-lg border-2 border-preto bg-white p-3 text-sm">
                       <p className="font-extrabold">Entregar em:</p>
                       <p>{enderecoCompleto({ endereco: form.endereco, numero: form.numero, bairro: form.bairro, complemento: form.complemento, cep: form.cep })}</p>
-                      <button type="button" onClick={() => setResumoEndereco(false)} className="mt-2 text-sm font-extrabold underline">
-                        Alterar endereço
-                      </button>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <button type="button" onClick={() => setResumoEndereco(false)} className="rounded-lg border-2 border-preto bg-bege px-3 py-1.5 text-xs font-extrabold">
+                          Alterar endereço
+                        </button>
+                        <button type="button" onClick={usarOutroEndereco} className="rounded-lg border-2 border-preto bg-ambar px-3 py-1.5 text-xs font-extrabold">
+                          Usar outro endereço
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <>
+                  {temEnderecoPreenchido && (
+                    <button type="button" onClick={usarOutroEndereco} className="rounded-lg border-2 border-preto bg-ambar px-3 py-1.5 text-xs font-extrabold">
+                      Usar outro endereço
+                    </button>
+                  )}
                   <Campo id="endereco" label="Rua" erro={erros.endereco}>
                     <textarea id="endereco" autoComplete="street-address" rows={2} value={form.endereco} onChange={(e) => set('endereco', e.target.value)} aria-invalid={!!erros.endereco} aria-describedby={erros.endereco ? 'endereco-erro' : undefined} className={cn(inputCls(erros.endereco), 'h-auto py-2')} placeholder="Ex.: Rua Piraquara" />
                   </Campo>
