@@ -9,7 +9,7 @@ import { usePedidosPausados } from '@/hooks/useLicenca'
 import { useCart } from '@/lib/cart'
 import { calcularFrete, type Frete } from '@/lib/frete'
 import { criarPedido, PedidoError } from '@/lib/pedido'
-import { apenasDigitos, checkoutSchema, FORMAS_PAGAMENTO, mascararCep, mascararTelefone, parseValor, type CheckoutInput } from '@/lib/schemas'
+import { apenasDigitos, checkoutSchema, enderecoCompleto, FORMAS_PAGAMENTO, mascararCep, mascararTelefone, parseValor, type CheckoutInput } from '@/lib/schemas'
 import { cn, formatBRL, UNIDADE_LABEL } from '@/lib/utils'
 
 const CLIENTE_KEY = 'pqd_cliente_v1'
@@ -84,6 +84,11 @@ export function CartSheet() {
   const seq = useRef(0)
   const taxa = typeof frete === 'object' ? frete.taxa : taxaConfig
   const total = subtotal + (itens.length ? taxa : 0)
+  // Endereço lembrado do último pedido: mostra resumo com botão "Alterar endereço" em vez dos campos.
+  const [resumoEndereco, setResumoEndereco] = useState(() => {
+    const c = lerCliente()
+    return !!c.endereco && c.endereco.trim().length >= 3 && !!c.bairro && !!c.numero && apenasDigitos(c.cep ?? '').length === 8
+  })
   const [confirmado, setConfirmado] = useState<{ numero: number } | null>(null)
 
   const set = <K extends keyof CheckoutInput>(k: K, v: CheckoutInput[K]) => {
@@ -91,6 +96,7 @@ export function CartSheet() {
     setErros((e) => ({ ...e, [k]: undefined }))
   }
 
+  const temErroEndereco = !!(erros.endereco || erros.numero || erros.bairro || erros.cep || erros.complemento)
   const enderecoPronto = form.endereco.trim().length >= 3 && form.bairro.trim().length >= 2 && form.numero.trim().length > 0 && apenasDigitos(form.cep).length === 8
 
   useEffect(() => {
@@ -242,6 +248,16 @@ export function CartSheet() {
                   <Campo id="telefone" label="Telefone (WhatsApp)" erro={erros.telefone}>
                     <input id="telefone" type="tel" inputMode="tel" autoComplete="tel-national" value={form.telefone} onChange={(e) => set('telefone', mascararTelefone(e.target.value))} aria-invalid={!!erros.telefone} aria-describedby={erros.telefone ? 'telefone-erro' : undefined} className={inputCls(erros.telefone)} placeholder="(21) 99999-8888" />
                   </Campo>
+                  {resumoEndereco && !temErroEndereco ? (
+                    <div className="rounded-lg border-2 border-preto bg-white p-3 text-sm">
+                      <p className="font-extrabold">Entregar em:</p>
+                      <p>{enderecoCompleto({ endereco: form.endereco, numero: form.numero, bairro: form.bairro, complemento: form.complemento, cep: form.cep })}</p>
+                      <button type="button" onClick={() => setResumoEndereco(false)} className="mt-2 text-sm font-extrabold underline">
+                        Alterar endereço
+                      </button>
+                    </div>
+                  ) : (
+                    <>
                   <Campo id="endereco" label="Rua" erro={erros.endereco}>
                     <textarea id="endereco" autoComplete="street-address" rows={2} value={form.endereco} onChange={(e) => set('endereco', e.target.value)} aria-invalid={!!erros.endereco} aria-describedby={erros.endereco ? 'endereco-erro' : undefined} className={cn(inputCls(erros.endereco), 'h-auto py-2')} placeholder="Ex.: Rua Piraquara" />
                   </Campo>
@@ -259,6 +275,8 @@ export function CartSheet() {
                   <Campo id="complemento" label="Complemento (opcional)" erro={erros.complemento}>
                     <input id="complemento" value={form.complemento ?? ''} onChange={(e) => set('complemento', e.target.value)} aria-invalid={!!erros.complemento} className={inputCls(erros.complemento)} placeholder="Ex.: casa 2, apto 301, fundos" />
                   </Campo>
+                    </>
+                  )}
                   {typeof frete === 'object' && frete.endereco && (
                     <p className="-mt-2 text-xs text-preto/80">Entrega para: {frete.endereco} · {frete.km.toFixed(1).replace('.', ',')} km</p>
                   )}
