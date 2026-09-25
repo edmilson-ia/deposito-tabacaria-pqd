@@ -54,7 +54,7 @@ export default function Home() {
             <Megaphone className="h-5 w-5" aria-hidden /> Promoção
           </a>
         )}
-        <p className="text-xs opacity-90">10% de acréscimo no débito e crédito</p>
+        <p className="text-xs opacity-90">Preços no cartão. No Pix e no dinheiro você tem desconto no carrinho</p>
       </section>
 
       <section aria-labelledby="cat-titulo">

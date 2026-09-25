@@ -10,7 +10,7 @@ import { useCart } from '@/lib/cart'
 import { calcularFrete, type Frete } from '@/lib/frete'
 import { criarPedido, PedidoError } from '@/lib/pedido'
 import { apenasDigitos, checkoutSchema, enderecoCompleto, FORMAS_PAGAMENTO, mascararCep, mascararTelefone, parseValor, type CheckoutInput } from '@/lib/schemas'
-import { ACRESCIMO_CARTAO, cn, formatBRL, UNIDADE_LABEL } from '@/lib/utils'
+import { cn, FATOR_CARTAO, formatBRL, UNIDADE_LABEL } from '@/lib/utils'
 
 const CLIENTE_KEY = 'pqd_cliente_v1'
 
@@ -83,8 +83,9 @@ export function CartSheet() {
   const [frete, setFrete] = useState<'idle' | 'calculando' | 'combinar' | Frete>('idle')
   const seq = useRef(0)
   const taxa = typeof frete === 'object' ? frete.taxa : taxaConfig
-  const acrescimo = form.forma_pagamento === 'cartao' ? Math.round(subtotal * ACRESCIMO_CARTAO * 100) / 100 : 0
-  const total = subtotal + acrescimo + (itens.length ? taxa : 0)
+  const aVista = form.forma_pagamento === 'pix' || form.forma_pagamento === 'dinheiro'
+  const desconto = aVista ? Math.round((subtotal - subtotal / FATOR_CARTAO) * 100) / 100 : 0
+  const total = subtotal - desconto + (itens.length ? taxa : 0)
   // Endereço lembrado do último pedido: mostra resumo com botão "Alterar endereço" em vez dos campos.
   const [resumoEndereco, setResumoEndereco] = useState(() => {
     const c = lerCliente()
@@ -324,10 +325,10 @@ export function CartSheet() {
                   <dt>Subtotal</dt>
                   <dd className="font-bold">{formatBRL(subtotal)}</dd>
                 </div>
-                {acrescimo > 0 && (
-                  <div className="flex justify-between">
-                    <dt>Acréscimo cartão (10%)</dt>
-                    <dd className="font-bold">{formatBRL(acrescimo)}</dd>
+                {desconto > 0 && (
+                  <div className="flex justify-between text-verde">
+                    <dt>Desconto Pix/dinheiro</dt>
+                    <dd className="font-bold">-{formatBRL(desconto)}</dd>
                   </div>
                 )}
                 <div className="flex justify-between">

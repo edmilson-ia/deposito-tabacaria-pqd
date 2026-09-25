@@ -26,7 +26,7 @@ export function mascararCep(s: string): string {
 export const FORMAS_PAGAMENTO = {
   pix: 'Pix',
   dinheiro: 'Dinheiro',
-  cartao: 'Débito ou crédito (+10%)',
+  cartao: 'Cartão (débito/crédito)',
 } as const
 
 export const checkoutSchema = z
