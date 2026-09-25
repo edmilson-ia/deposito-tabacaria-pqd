@@ -1,4 +1,5 @@
-import { Minus, Plus, ShoppingCart } from 'lucide-react'
+import * as Dialog from '@radix-ui/react-dialog'
+import { Minus, Plus, ShoppingCart, X, ZoomIn } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ProductImage } from '@/components/ProductImage'
@@ -21,7 +22,34 @@ export function ProductCard({ produto }: { produto: Produto }) {
       )}
     >
       <div className="relative">
-        <ProductImage src={produto.imagem_url} alt={produto.nome} className="aspect-square w-full border-b-2 border-preto" />
+        {produto.imagem_url ? (
+          <Dialog.Root>
+            <Dialog.Trigger
+              aria-label={`Ampliar foto de ${produto.nome}`}
+              className="relative block w-full cursor-zoom-in"
+            >
+              <ProductImage src={produto.imagem_url} alt={produto.nome} className="aspect-square w-full border-b-2 border-preto" />
+              <span className="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full border-2 border-preto bg-bege" aria-hidden>
+                <ZoomIn className="h-4 w-4" />
+              </span>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 z-[80] bg-black/80" />
+              <Dialog.Content className="fixed left-1/2 top-1/2 z-[90] flex max-h-[92vh] w-[94vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border-2 border-preto bg-white text-preto shadow-adesivo">
+                <div className="flex items-center gap-2 border-b-2 border-preto bg-bege px-3 py-2">
+                  <Dialog.Title className="flex-1 text-sm font-extrabold leading-tight">{produto.nome}</Dialog.Title>
+                  <Dialog.Close aria-label="Fechar foto" className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-preto bg-white">
+                    <X className="h-5 w-5" aria-hidden />
+                  </Dialog.Close>
+                </div>
+                <Dialog.Description className="sr-only">Foto ampliada do produto</Dialog.Description>
+                <img src={produto.imagem_url} alt={produto.nome} className="max-h-[80vh] w-full flex-1 object-contain p-3" />
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
+        ) : (
+          <ProductImage src={produto.imagem_url} alt={produto.nome} className="aspect-square w-full border-b-2 border-preto" />
+        )}
         {!disponivel && (
           <span className="absolute left-2 top-2 rounded-md border-2 border-preto bg-preto px-2 py-0.5 text-[11px] font-extrabold uppercase text-bege">
             Indisponível

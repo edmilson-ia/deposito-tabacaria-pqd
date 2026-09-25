@@ -285,6 +285,9 @@ export function CartSheet() {
 
                   <fieldset>
                     <legend className="mb-1 text-sm font-extrabold">Forma de pagamento</legend>
+                    <p className="mb-2 rounded-lg border-2 border-preto bg-ambar px-3 py-2 text-center font-titulo text-xl leading-tight shadow-adesivo-sm">
+                      Desconto de 10% no Dinheiro e Pix
+                    </p>
                     <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-invalid={!!erros.forma_pagamento}>
                       {(Object.keys(FORMAS_PAGAMENTO) as (keyof typeof FORMAS_PAGAMENTO)[]).map((k) => (
                         <label
