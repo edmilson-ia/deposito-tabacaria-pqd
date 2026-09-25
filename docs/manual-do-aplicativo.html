@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Manual do aplicativo — Depósito e Tabacaria do PQD</title>
+<style>
+  @page { margin: 16mm; }
+  body { font: 13px/1.5 "Segoe UI", Arial, sans-serif; color: #1a1a1a; }
+  h1 { font-size: 24px; margin: 0 0 4px; color: #1f3b2c; }
+  h2 { font-size: 17px; margin: 22px 0 6px; padding-bottom: 3px; border-bottom: 2px solid #f28c1e; color: #1f3b2c; }
+  h3 { font-size: 14px; margin: 14px 0 4px; }
+  p { margin: 4px 0; }
+  ul, ol { margin: 4px 0 4px 20px; padding: 0; }
+  li { margin: 2px 0; }
+  code, pre { font-family: Consolas, monospace; font-size: 12px; background: #f3efe6; border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 8px 10px; white-space: pre-wrap; }
+  table { border-collapse: collapse; width: 100%; margin: 6px 0; }
+  th, td { border: 1px solid #c9c2b0; padding: 4px 8px; text-align: left; vertical-align: top; }
+  th { background: #f3efe6; }
+  .aviso { background: #fff3d6; border-left: 4px solid #f28c1e; padding: 6px 10px; margin: 8px 0; }
+  .sub { color: #555; }
+  .quebra { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>Depósito e Tabacaria do PQD — Manual do aplicativo</h1>
+<p class="sub">Tudo o que o aplicativo faz, como operar no dia a dia e o que você mesmo pode alterar. Versão de 25/09/2026.</p>
+
+<h2>1. Resumo em uma frase</h2>
+<p>O cliente escolhe os produtos no celular, informa o CEP, o número e a forma de pagamento, e finaliza. O pedido é gravado, a taxa de entrega é calculada pela distância e o <b>talão sai sozinho na impressora da loja</b>.</p>
+
+<h2>2. O que o cliente vê (o site)</h2>
+<ul>
+  <li><b>Aviso de maioridade (18+)</b> na primeira visita.</li>
+  <li><b>Tela inicial</b> enxuta: botão do catálogo completo, botão <b>Promoção</b> (grupo de WhatsApp), faixa "Pix e Dinheiro têm desconto de 10%" e as categorias mais pedidas (Cervejas, Refrigerantes, Vinhos e Chopp de Vinhos, Energéticos, Tabacaria, Whisky).</li>
+  <li><b>Catálogo</b> com busca por nome, filtro por categoria e fotos. Ao tocar na foto, ela <b>amplia</b>. Ao trocar de categoria, a tela volta ao topo.</li>
+  <li><b>Carrinho</b> (gaveta lateral) com soma dos itens, aumentar/diminuir quantidade e remover.</li>
+  <li><b>Checkout ("Seus dados")</b>: nome, telefone, <b>CEP</b> (o aplicativo preenche rua, bairro e cidade sozinho; o cliente só informa o número e, se quiser, o complemento), observações e <b>forma de pagamento obrigatória</b>.</li>
+  <li><b>Endereço lembrado:</b> quem já pediu vê "Entregar em: ..." com os botões <b>Alterar endereço</b> e <b>Usar outro endereço</b>.</li>
+  <li><b>Taxa de entrega automática:</b> calculada pela distância de carro entre a loja e o cliente. Se o endereço não for encontrado, a entrega fica "a combinar" e o cliente ainda pode finalizar.</li>
+  <li><b>Confirmação:</b> "Pedido #N registrado". O cliente não é levado ao WhatsApp.</li>
+  <li>Páginas <b>Contato</b> e <b>Empresa</b> (com o crédito discreto da Evolua Automação no fim).</li>
+</ul>
+
+<h3>Preços e formas de pagamento</h3>
+<table>
+  <tr><th>Forma</th><th>Como o valor é calculado</th></tr>
+  <tr><td>Cartão (débito/crédito)</td><td>Paga o <b>preço cheio</b> mostrado no site. Os preços do site já têm +10% sobre a tabela antiga.</td></tr>
+  <tr><td>Pix e dinheiro</td><td>Recebem <b>desconto à vista</b> sobre os produtos (o preço volta ao valor antigo, cerca de 9,09%). A entrega não entra no desconto. No dinheiro o cliente informa o troco.</td></tr>
+</table>
+<p>O total sempre é recalculado no servidor, então o cliente não consegue alterar valores pelo celular.</p>
+
+<h3>Taxa de entrega (tabela atual)</h3>
+<table>
+  <tr><th>Distância de carro</th><th>Taxa</th></tr>
+  <tr><td>até 3 km</td><td>R$ 5,00</td></tr>
+  <tr><td>acima de 3 até 4 km</td><td>R$ 6,00</td></tr>
+  <tr><td>acima de 4 até 7 km</td><td>R$ 7,00</td></tr>
+  <tr><td>acima de 7 km</td><td>R$ 7,00 + R$ 1,00 por km inteiro além dos 7</td></tr>
+</table>
+<p>Ponto de partida: Rua Pedralva, 50, Realengo, Rio de Janeiro.</p>
+
+<h2 class="quebra">3. O que a loja faz (painel administrativo — <code>/admin</code>)</h2>
+<p>Login com e-mail (ou telefone) e senha. Há "Esqueci minha senha" e a aba <b>Minha conta</b> para trocar e-mail e senha.</p>
+<ul>
+  <li><b>Produtos:</b> criar, editar nome, descrição, categoria, preço, unidade (un/pack), estoque; ativar/desativar; trocar a foto (aceita foto do celular); filtro "sem foto"; exportar o catálogo.</li>
+  <li><b>Categorias:</b> criar, renomear, reordenar; só apaga categoria vazia.</li>
+  <li><b>Pedidos:</b> lista com itens, endereço, distância, forma de pagamento, troco e observações; trocar o status (novo, confirmado, em entrega, entregue, cancelado); filtro por status; botão <b>Imprimir cupom</b> em cada pedido; caixa <b>"Imprimir pedidos novos automaticamente"</b>.</li>
+  <li><b>Loja:</b> nome, número de WhatsApp da loja, taxa fixa de entrega (só usada se o cálculo por distância falhar; 0 = "a combinar") e link do grupo de promoção.</li>
+</ul>
+
+<h3>Impressão automática do talão</h3>
+<ul>
+  <li>Quando um pedido é gravado, o painel recebe o aviso na hora, dá um <b>beep</b> e imprime o talão.</li>
+  <li>Isso funciona pela <b>janela do painel aberta no computador da loja</b>. Um atalho na pasta de Inicialização do Windows abre essa janela sozinho ao ligar o computador, em modo de impressão direta (sem caixa de diálogo).</li>
+  <li>O talão traz: nome da loja, número e data, cliente, telefone e endereço, itens, subtotal, desconto, entrega (com km), total, forma de pagamento, troco e observações.</li>
+  <li>Se a janela estiver fechada, os pedidos que chegarem <b>imprimem quando ela for aberta de novo</b>.</li>
+</ul>
+
+<h2>4. Painel do dono do sistema (<code>/master</code>)</h2>
+<p>Só quem é dono do sistema (Evolua Automação) entra. Controla a licença da loja: iniciar teste, registrar pagamento, definir vencimento e carência, bloquear e liberar, e ver o histórico. O dono da loja <b>não</b> consegue mudar a licença.</p>
+
+<h2>5. Licença: o que acontece quando o teste vence</h2>
+<div class="aviso">
+  <b>Teste atual: vence em 30/09/2026 às 16:44.</b> Nada é apagado nem escondido quando vence. Só muda uma coisa: <b>a loja deixa de receber novos pedidos.</b>
+</div>
+<table>
+  <tr><th>Situação depois do vencimento</th><th>O que acontece</th></tr>
+  <tr><td>Catálogo e site</td><td>Continuam abertos. O cliente vê os produtos.</td></tr>
+  <tr><td>Finalizar pedido</td><td><b>Bloqueado</b>: aparece "Pedidos pausados" e o carrinho fica salvo. O servidor também recusa, então não há como burlar.</td></tr>
+  <tr><td>Painel admin</td><td>Continua abrindo. Produtos, categorias, pedidos antigos e configurações continuam acessíveis, e dá para exportar o catálogo.</td></tr>
+  <tr><td>Pedidos já feitos</td><td>Continuam na lista e podem ser impressos.</td></tr>
+  <tr><td>Como voltar a funcionar</td><td>Só o dono do sistema, pelo <code>/master</code>: registrar o pagamento (soma dias ao vencimento) ou estender o prazo. Liberou, volta na hora.</td></tr>
+</table>
+<p>No plano mensal existe uma <b>carência</b> em dias depois do vencimento. Enquanto ela durar, a loja segue funcionando e o painel mostra um aviso âmbar.</p>
+
+<h2 class="quebra">6. Como trocar de impressora (sem o programador)</h2>
+<p>O aplicativo imprime na <b>impressora padrão do Windows</b> do computador da loja. Para trocar:</p>
+<ol>
+  <li>Instale a impressora nova no Windows (driver do fabricante) e confirme que imprime uma página de teste.</li>
+  <li>Configurações do Windows → Impressoras e scanners. Desligue <b>"Permitir que o Windows gerencie minha impressora padrão"</b>.</li>
+  <li>Clique na impressora nova → <b>Gerenciar → Definir como padrão</b>.</li>
+  <li>Feche a janela do painel de pedidos (a do atalho) e abra de novo pelo atalho da pasta de Inicialização.</li>
+  <li>Faça um pedido de teste e confira o talão.</li>
+</ol>
+<h3>Impressora térmica de 80 mm (cupom)</h3>
+<ul>
+  <li>Nas preferências da impressora, escolha papel de <b>80 mm contínuo</b> (rolo) e ligue "cortar ao final", se ela tiver guilhotina.</li>
+  <li>O talão já foi feito para caber em 80 mm e também em A4. Não precisa mudar nada no site.</li>
+</ul>
+
+<h2>7. Como mudar o valor do frete hoje</h2>
+<p>A tabela de frete está <b>no n8n</b> (o sistema de automação), no workflow <code>pedido_taxa_km_deposito</code>. Para alterar:</p>
+<ol>
+  <li>Entre no n8n e abra o workflow <code>pedido_taxa_km_deposito</code>.</li>
+  <li>Clique duas vezes no nó <b>Calcular taxa</b>.</li>
+  <li>Altere os números nestas linhas (os valores em reais e os limites em km):
+<pre>if (km &lt;= 3) taxa = 5;        // até 3 km = R$ 5
+else if (km &lt;= 4) taxa = 6;   // até 4 km = R$ 6
+else if (km &lt;= 7) taxa = 7;   // até 7 km = R$ 7
+else taxa = 7 + Math.ceil(km - 7);   // depois de 7 km: R$ 7 + R$ 1 por km</pre></li>
+  <li>Salve e <b>publique</b> o workflow.</li>
+</ol>
+<div class="aviso">
+  <b>Atenção:</b> por segurança o servidor só aceita taxa entre <b>R$ 5,00 e R$ 500,00</b>. Se você quiser cobrar menos que R$ 5,00, é preciso um ajuste do programador.
+</div>
+<p>Para <b>mudar o endereço da loja</b> (ponto de partida), edite o texto do nó <b>Geocode loja</b> no mesmo workflow.</p>
+<p><b>Melhoria proposta:</b> deixar a tabela de frete editável no próprio painel da loja (aba Loja), sem abrir o n8n. Isso exige uma alteração no aplicativo e no banco.</p>
+
+<h2>8. Coisas que dependem do programador</h2>
+<ul>
+  <li>Publicar novas versões do site (hoje é feito arrastando a pasta gerada no Netlify).</li>
+  <li>Cartão de crédito <b>online</b> (pagamento antes do pedido, via Mercado Pago): ainda não existe.</li>
+  <li>Ruas que o mapa gratuito não encontra: o valor pode ficar "a combinar" ou aproximado.</li>
+  <li>Alterar as regras de licença, os limites de frete e o desconto do Pix.</li>
+</ul>
+
+<h2>9. Cuidados do dia a dia</h2>
+<ul>
+  <li>Deixe o computador da loja <b>ligado</b>, com internet e com a impressora ligada, e a janela do painel aberta (pode ficar minimizada).</li>
+  <li>Não compartilhe a senha do painel. Troque em <b>Minha conta</b> se suspeitar de acesso indevido.</li>
+  <li>Pedidos de teste devem ser cancelados ou apagados antes de a loja começar a vender de verdade.</li>
+  <li>Faça o backup do catálogo de vez em quando: aba Produtos → Exportar.</li>
+</ul>
+
+<p class="sub" style="margin-top:22px">Aplicativo desenvolvido pela Evolua Automação — instagram.com/evolua_automacao</p>
+</body>
+</html>
