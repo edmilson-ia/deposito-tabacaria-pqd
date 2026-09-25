@@ -97,11 +97,15 @@ export function CartSheet() {
   // CEP primeiro: 'idle' (só o CEP) | 'buscando' | 'ok' (rua/bairro/cidade vieram do CEP: só falta o número) | 'manual' (digitar tudo)
   const [cepModo, setCepModo] = useState<'idle' | 'buscando' | 'ok' | 'manual'>('idle')
   const [cepAviso, setCepAviso] = useState('')
+  // Coordenadas do CEP (só valem enquanto o endereço é o que veio do CEP, sem correção manual)
+  const [cepCoord, setCepCoord] = useState<{ lat: number; lng: number } | null>(null)
   // CEP já preenchido (dados antigos ou salvos) sem busca feita: mostra todos os campos para conferir
   const modoCep = cepModo === 'idle' && apenasDigitos(form.cep).length === 8 ? 'manual' : cepModo
   const [confirmado, setConfirmado] = useState<{ numero: number } | null>(null)
 
   const set = <K extends keyof CheckoutInput>(k: K, v: CheckoutInput[K]) => {
+    // corrigir rua/bairro/cidade à mão invalida as coordenadas que vieram do CEP
+    if (k === 'endereco' || k === 'bairro' || k === 'cidade') setCepCoord(null)
     setForm((f) => ({ ...f, [k]: v }))
     setErros((e) => ({ ...e, [k]: undefined }))
   }
@@ -117,11 +121,11 @@ export function CartSheet() {
     const minha = ++seq.current
     setFrete('calculando')
     const t = setTimeout(async () => {
-      const r = await calcularFrete({ endereco: form.endereco.trim(), numero: form.numero.trim(), bairro: form.bairro.trim(), cidade: form.cidade.trim(), cep: apenasDigitos(form.cep) }, tabelaFrete)
+      const r = await calcularFrete({ endereco: form.endereco.trim(), numero: form.numero.trim(), bairro: form.bairro.trim(), cidade: form.cidade.trim(), cep: apenasDigitos(form.cep), ...(cepCoord ?? {}) }, tabelaFrete)
       if (seq.current === minha) setFrete(r ?? 'combinar')
     }, 900)
     return () => clearTimeout(t)
-  }, [etapa, enderecoPronto, form.endereco, form.numero, form.bairro, form.cidade, form.cep, tabelaFrete])
+  }, [etapa, enderecoPronto, form.endereco, form.numero, form.bairro, form.cidade, form.cep, tabelaFrete, cepCoord])
 
   const temEnderecoPreenchido = !!(form.endereco || form.numero || form.bairro || form.cidade || form.complemento || form.cep)
 
@@ -145,11 +149,13 @@ export function CartSheet() {
     }
     setCepModo('buscando')
     setCepAviso('')
+    setCepCoord(null)
     const r = await buscarCep(d)
     if (typeof r === 'object') {
       if (r.rua) {
         setForm((f) => ({ ...f, endereco: r.rua, bairro: r.bairro || f.bairro, cidade: r.cidade || f.cidade }))
         setErros((e) => ({ ...e, endereco: undefined, bairro: undefined, cidade: undefined, cep: undefined }))
+        setCepCoord(typeof r.lat === 'number' && typeof r.lng === 'number' ? { lat: r.lat, lng: r.lng } : null)
         setCepModo('ok')
       } else {
         // CEP geral da cidade/bairro: sem rua, o cliente completa
@@ -307,7 +313,7 @@ export function CartSheet() {
                       <p className="font-extrabold">Entregar em:</p>
                       <p>{enderecoCompleto({ endereco: form.endereco, numero: form.numero, bairro: form.bairro, cidade: form.cidade, complemento: form.complemento, cep: form.cep })}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        <button type="button" onClick={() => { setResumoEndereco(false); setCepModo('manual') }} className="rounded-lg border-2 border-preto bg-bege px-3 py-1.5 text-xs font-extrabold">
+                        <button type="button" onClick={() => { setCepCoord(null); setResumoEndereco(false); setCepModo('manual') }} className="rounded-lg border-2 border-preto bg-bege px-3 py-1.5 text-xs font-extrabold">
                           Alterar endereço
                         </button>
                         <button type="button" onClick={usarOutroEndereco} className="rounded-lg border-2 border-preto bg-ambar px-3 py-1.5 text-xs font-extrabold">
@@ -336,7 +342,7 @@ export function CartSheet() {
                         <div className="rounded-lg border-2 border-preto bg-white p-3 text-sm">
                           <p className="font-extrabold">{form.endereco}</p>
                           <p>{form.bairro} · {form.cidade}</p>
-                          <button type="button" onClick={() => setCepModo('manual')} className="mt-1 text-xs font-bold underline">
+                          <button type="button" onClick={() => { setCepCoord(null); setCepModo('manual') }} className="mt-1 text-xs font-bold underline">
                             Corrigir endereço
                           </button>
                         </div>

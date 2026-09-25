@@ -68,3 +68,13 @@
     animation: none;
   }
 }
+
+/* Celular: o navegador dá zoom automático ao tocar num campo com letra menor que 16px (deixa o layout feio).
+   Fora de @layer para vencer as classes text-sm/text-xs dos campos. Não bloqueia o zoom por pinça (acessibilidade). */
+@media (max-width: 1024px), (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

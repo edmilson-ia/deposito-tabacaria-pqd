@@ -90,7 +90,7 @@ export interface Frete {
 
 /** Devolve null se o endereço não foi encontrado ou o serviço falhou: a entrega fica "a combinar". */
 export async function calcularFrete(
-  d: { endereco: string; numero: string; bairro: string; cidade: string; cep: string },
+  d: { endereco: string; numero: string; bairro: string; cidade: string; cep: string; lat?: number; lng?: number },
   tabela: TabelaFrete = TABELA_PADRAO,
 ): Promise<Frete | null> {
   const ctrl = new AbortController()
@@ -100,7 +100,7 @@ export async function calcularFrete(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       // ViaCEP acrescenta apelidos depois do nome ("Rua X - Tio Nilton"): o mapa só acha a rua sem o apelido
-      body: JSON.stringify({ rua: d.endereco.replace(/\s+-\s+.*$/, '').trim(), numero: d.numero, bairro: d.bairro, cidade: d.cidade, cep: d.cep }),
+      body: JSON.stringify({ rua: d.endereco.replace(/\s+-\s+.*$/, '').trim(), numero: d.numero, bairro: d.bairro, cidade: d.cidade, cep: d.cep, lat: d.lat, lng: d.lng }),
       signal: ctrl.signal,
     })
     if (!res.ok) return null
