@@ -25,7 +25,17 @@ function lerCliente(): Partial<CheckoutInput> {
   }
 }
 
-function salvarCliente(d: { nome: string; telefone: string; endereco: string; numero: string; bairro: string; cidade: string; complemento?: string; cep: string }) {
+/** Coordenadas do CEP do último pedido (evita nova consulta e permite calcular o frete sem geocodificar). */
+function lerCoordCliente(): { lat: number; lng: number } | null {
+  try {
+    const o = JSON.parse(localStorage.getItem(CLIENTE_KEY) ?? '{}')
+    return typeof o.lat === 'number' && typeof o.lng === 'number' ? { lat: o.lat, lng: o.lng } : null
+  } catch {
+    return null
+  }
+}
+
+function salvarCliente(d: { nome: string; telefone: string; endereco: string; numero: string; bairro: string; cidade: string; complemento?: string; cep: string; lat?: number; lng?: number }) {
   try {
     localStorage.setItem(CLIENTE_KEY, JSON.stringify(d))
   } catch {
@@ -98,9 +108,14 @@ export function CartSheet() {
   const [cepModo, setCepModo] = useState<'idle' | 'buscando' | 'ok' | 'manual'>('idle')
   const [cepAviso, setCepAviso] = useState('')
   // Coordenadas do CEP (só valem enquanto o endereço é o que veio do CEP, sem correção manual)
-  const [cepCoord, setCepCoord] = useState<{ lat: number; lng: number } | null>(null)
+  const [cepCoord, setCepCoord] = useState<{ lat: number; lng: number } | null>(() => lerCoordCliente())
   // CEP já preenchido (dados antigos ou salvos) sem busca feita: mostra todos os campos para conferir
   const modoCep = cepModo === 'idle' && apenasDigitos(form.cep).length === 8 ? 'manual' : cepModo
+  // Cliente que volta (endereço salvo) sem coordenadas guardadas: busca pelo CEP uma vez, antes de calcular o frete
+  const [esperandoCoord, setEsperandoCoord] = useState(() => {
+    const c = lerCliente()
+    return !!c.cep && apenasDigitos(c.cep).length === 8 && !lerCoordCliente()
+  })
   const [confirmado, setConfirmado] = useState<{ numero: number } | null>(null)
 
   const set = <K extends keyof CheckoutInput>(k: K, v: CheckoutInput[K]) => {
@@ -114,7 +129,22 @@ export function CartSheet() {
   const enderecoPronto = form.endereco.trim().length >= 3 && form.bairro.trim().length >= 2 && form.cidade.trim().length >= 2 && form.numero.trim().length > 0 && apenasDigitos(form.cep).length === 8
 
   useEffect(() => {
-    if (etapa !== 'dados' || !enderecoPronto) {
+    if (!esperandoCoord) return
+    let ativo = true
+    void buscarCep(apenasDigitos(lerCliente().cep ?? '')).then((r) => {
+      if (!ativo) return
+      if (typeof r === 'object' && typeof r.lat === 'number' && typeof r.lng === 'number') setCepCoord({ lat: r.lat, lng: r.lng })
+      setEsperandoCoord(false)
+    })
+    return () => {
+      ativo = false
+    }
+    // roda uma vez na abertura do app
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (etapa !== 'dados' || !enderecoPronto || esperandoCoord) {
       setFrete('idle')
       return
     }
@@ -125,7 +155,7 @@ export function CartSheet() {
       if (seq.current === minha) setFrete(r ?? 'combinar')
     }, 900)
     return () => clearTimeout(t)
-  }, [etapa, enderecoPronto, form.endereco, form.numero, form.bairro, form.cidade, form.cep, tabelaFrete, cepCoord])
+  }, [etapa, enderecoPronto, form.endereco, form.numero, form.bairro, form.cidade, form.cep, tabelaFrete, cepCoord, esperandoCoord])
 
   const temEnderecoPreenchido = !!(form.endereco || form.numero || form.bairro || form.cidade || form.complemento || form.cep)
 
@@ -219,7 +249,7 @@ export function CartSheet() {
     try {
       const freteOk = typeof frete === 'object' ? frete : null
       const pedido = await criarPedido(dados, itens, freteOk)
-      salvarCliente({ nome: dados.nome, telefone: form.telefone, endereco: dados.endereco, numero: dados.numero, bairro: dados.bairro, cidade: dados.cidade, complemento: dados.complemento, cep: form.cep })
+      salvarCliente({ nome: dados.nome, telefone: form.telefone, endereco: dados.endereco, numero: dados.numero, bairro: dados.bairro, cidade: dados.cidade, complemento: dados.complemento, cep: form.cep, ...(cepCoord ?? {}) })
       limpar()
       setConfirmado({ numero: pedido.numeroDiario })
       setEtapa('ok')
@@ -270,6 +300,7 @@ export function CartSheet() {
           <>
             <div className="flex-1 overflow-y-auto">
               {etapa === 'itens' ? (
+                <>
                 <ul className="divide-y-2 divide-preto/15 px-4">
                   {itens.map((i) => (
                     <li key={i.produtoId} className="flex gap-3 py-3">
@@ -300,6 +331,21 @@ export function CartSheet() {
                     </li>
                   ))}
                 </ul>
+                {enderecoPronto && (
+                  <div className="mx-4 mb-4 rounded-lg border-2 border-preto bg-white p-3 text-sm">
+                    <p className="font-extrabold">Entregar em:</p>
+                    <p>{enderecoCompleto({ endereco: form.endereco, numero: form.numero, bairro: form.bairro, cidade: form.cidade, complemento: form.complemento, cep: form.cep })}</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button type="button" onClick={() => { setCepCoord(null); setResumoEndereco(false); setCepModo('manual'); setEtapa('dados') }} className="rounded-lg border-2 border-preto bg-bege px-3 py-1.5 text-xs font-extrabold">
+                        Alterar endereço
+                      </button>
+                      <button type="button" onClick={() => { usarOutroEndereco(); setEtapa('dados') }} className="rounded-lg border-2 border-preto bg-ambar px-3 py-1.5 text-xs font-extrabold">
+                        Usar outro endereço
+                      </button>
+                    </div>
+                  </div>
+                )}
+                </>
               ) : (
                 <form id="checkout-form" onSubmit={finalizar} noValidate className="space-y-4 p-4">
                   <Campo id="nome" label="Nome" erro={erros.nome}>
