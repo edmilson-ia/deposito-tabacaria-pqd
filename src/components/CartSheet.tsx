@@ -1,5 +1,5 @@
 import { ArrowLeft, CheckCircle2, Loader2, Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { ProductImage } from '@/components/ProductImage'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,7 @@ import { useConfig } from '@/hooks/useCatalogo'
 import { usePedidosPausados } from '@/hooks/useLicenca'
 import { useCart } from '@/lib/cart'
 import { buscarCep } from '@/lib/cep'
-import { calcularFrete, type Frete } from '@/lib/frete'
+import { calcularFrete, lerTabelaFrete, type Frete } from '@/lib/frete'
 import { criarPedido, PedidoError } from '@/lib/pedido'
 import { apenasDigitos, checkoutSchema, enderecoCompleto, FORMAS_PAGAMENTO, mascararCep, mascararTelefone, parseValor, type CheckoutInput } from '@/lib/schemas'
 import { cn, FATOR_CARTAO, formatBRL, UNIDADE_LABEL } from '@/lib/utils'
@@ -63,6 +63,7 @@ export function CartSheet() {
   const config = useConfig()
   const pausados = usePedidosPausados()
   const taxaConfig = Number(config.data?.taxa_entrega ?? 0) || 0
+  const tabelaFrete = useMemo(() => lerTabelaFrete(config.data), [config.data])
 
   const [etapa, setEtapa] = useState<Etapa>('itens')
   const [enviando, setEnviando] = useState(false)
@@ -116,11 +117,11 @@ export function CartSheet() {
     const minha = ++seq.current
     setFrete('calculando')
     const t = setTimeout(async () => {
-      const r = await calcularFrete({ endereco: form.endereco.trim(), numero: form.numero.trim(), bairro: form.bairro.trim(), cidade: form.cidade.trim(), cep: apenasDigitos(form.cep) })
+      const r = await calcularFrete({ endereco: form.endereco.trim(), numero: form.numero.trim(), bairro: form.bairro.trim(), cidade: form.cidade.trim(), cep: apenasDigitos(form.cep) }, tabelaFrete)
       if (seq.current === minha) setFrete(r ?? 'combinar')
     }, 900)
     return () => clearTimeout(t)
-  }, [etapa, enderecoPronto, form.endereco, form.numero, form.bairro, form.cidade, form.cep])
+  }, [etapa, enderecoPronto, form.endereco, form.numero, form.bairro, form.cidade, form.cep, tabelaFrete])
 
   const temEnderecoPreenchido = !!(form.endereco || form.numero || form.bairro || form.cidade || form.complemento || form.cep)
 

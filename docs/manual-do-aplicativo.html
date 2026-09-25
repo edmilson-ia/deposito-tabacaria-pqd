@@ -68,7 +68,7 @@
   <li><b>Produtos:</b> criar, editar nome, descrição, categoria, preço, unidade (un/pack), estoque; ativar/desativar; trocar a foto (aceita foto do celular); filtro "sem foto"; exportar o catálogo.</li>
   <li><b>Categorias:</b> criar, renomear, reordenar; só apaga categoria vazia.</li>
   <li><b>Pedidos:</b> lista com itens, endereço, distância, forma de pagamento, troco e observações; trocar o status (novo, confirmado, em entrega, entregue, cancelado); filtro por status; botão <b>Imprimir cupom</b> em cada pedido; caixa <b>"Imprimir pedidos novos automaticamente"</b>.</li>
-  <li><b>Loja:</b> nome, número de WhatsApp da loja, taxa fixa de entrega (só usada se o cálculo por distância falhar; 0 = "a combinar") e link do grupo de promoção.</li>
+  <li><b>Loja:</b> nome, número de WhatsApp da loja, <b>tabela de frete por distância</b> (editável), taxa fixa de reserva (só usada se o cálculo por distância falhar; 0 = "a combinar"), link do grupo de promoção e um guia de <b>como trocar a impressora</b>.</li>
 </ul>
 
 <h3>Impressão automática do talão</h3>
@@ -111,30 +111,26 @@
   <li>O talão já foi feito para caber em 80 mm e também em A4. Não precisa mudar nada no site.</li>
 </ul>
 
-<h2>7. Como mudar o valor do frete hoje</h2>
-<p>A tabela de frete está <b>no n8n</b> (o sistema de automação), no workflow <code>pedido_taxa_km_deposito</code>. Para alterar:</p>
+<h2>7. Como mudar o valor do frete (pelo painel da loja)</h2>
+<p>O dono do depósito muda a tabela sozinho, sem o programador:</p>
 <ol>
-  <li>Entre no n8n e abra o workflow <code>pedido_taxa_km_deposito</code>.</li>
-  <li>Clique duas vezes no nó <b>Calcular taxa</b>.</li>
-  <li>Altere os números nestas linhas (os valores em reais e os limites em km):
-<pre>if (km &lt;= 3) taxa = 5;        // até 3 km = R$ 5
-else if (km &lt;= 4) taxa = 6;   // até 4 km = R$ 6
-else if (km &lt;= 7) taxa = 7;   // até 7 km = R$ 7
-else taxa = 7 + Math.ceil(km - 7);   // depois de 7 km: R$ 7 + R$ 1 por km</pre></li>
-  <li>Salve e <b>publique</b> o workflow.</li>
+  <li>Entre no painel administrativo e abra a aba <b>Loja</b>.</li>
+  <li>Em <b>"Taxa de entrega por distância"</b>, edite as faixas: em cada linha, "Até (km)" e "Valor (R$)". Exemplo: até 3 km = R$ 5,00.</li>
+  <li>Use <b>Adicionar faixa</b> para incluir mais uma e a lixeira para remover.</li>
+  <li>Em <b>"Depois da última faixa, somar por km inteiro"</b>, informe quanto cobrar a cada km que passar da última faixa (ex.: R$ 1,00).</li>
+  <li>Confira os <b>Exemplos</b> que aparecem embaixo (mostram quanto ficaria a entrega para 2, 3,5, 6 e 9,4 km) e clique em <b>Salvar configurações</b>.</li>
 </ol>
 <div class="aviso">
-  <b>Atenção:</b> por segurança o servidor só aceita taxa entre <b>R$ 5,00 e R$ 500,00</b>. Se você quiser cobrar menos que R$ 5,00, é preciso um ajuste do programador.
+  <b>Regras:</b> os km precisam aumentar de uma faixa para a outra; cada valor deve ficar entre <b>R$ 1,00 e R$ 500,00</b>; no máximo 10 faixas. Se algo estiver errado, o painel avisa e não salva. A mudança vale para os próximos pedidos, na hora.
 </div>
-<p>Para <b>mudar o endereço da loja</b> (ponto de partida), edite o texto do nó <b>Geocode loja</b> no mesmo workflow.</p>
-<p><b>Melhoria proposta:</b> deixar a tabela de frete editável no próprio painel da loja (aba Loja), sem abrir o n8n. Isso exige uma alteração no aplicativo e no banco.</p>
+<p>Para <b>mudar o endereço da loja</b> (ponto de partida das distâncias), é preciso o programador: fica no n8n, no nó <b>Geocode loja</b> do workflow <code>pedido_taxa_km_deposito</code>.</p>
 
 <h2>8. Coisas que dependem do programador</h2>
 <ul>
   <li>Publicar novas versões do site (hoje é feito arrastando a pasta gerada no Netlify).</li>
   <li>Cartão de crédito <b>online</b> (pagamento antes do pedido, via Mercado Pago): ainda não existe.</li>
   <li>Ruas que o mapa gratuito não encontra: o valor pode ficar "a combinar" ou aproximado.</li>
-  <li>Alterar as regras de licença, os limites de frete e o desconto do Pix.</li>
+  <li>Alterar as regras de licença, o endereço de partida do frete e o desconto do Pix.</li>
 </ul>
 
 <h2>9. Cuidados do dia a dia</h2>
