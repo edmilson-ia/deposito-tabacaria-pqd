@@ -23,4 +23,7 @@ export const UNIDADE_SIGLA: Record<Unidade, string> = {
   fardo: 'fardo',
 }
 
+/** Acréscimo aplicado sobre o valor dos produtos quando o pagamento é no cartão (débito/crédito). */
+export const ACRESCIMO_CARTAO = 0.1
+
 export const NOME_LOJA = 'Depósito e Tabacaria do PQD'

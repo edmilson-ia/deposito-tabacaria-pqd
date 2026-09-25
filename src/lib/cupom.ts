@@ -8,7 +8,8 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 export function htmlCupom(p: PedidoAdmin): string {
   const numero = p.numero_diario ?? p.id
   const data = new Date(p.criado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
-  const subtotal = p.total - p.taxa_entrega
+  const acrescimo = Number(p.acrescimo) || 0
+  const subtotal = p.total - p.taxa_entrega - acrescimo
   const linhas = p.itens_pedido
     .map(
       (i) =>
@@ -37,6 +38,7 @@ export function htmlCupom(p: PedidoAdmin): string {
 <hr>
 <table>
 <tr><td>Subtotal</td><td class="d">${formatBRL(subtotal)}</td></tr>
+${acrescimo > 0 ? `<tr><td>Acréscimo cartão (10%)</td><td class="d">${formatBRL(acrescimo)}</td></tr>` : ''}
 <tr><td>Entrega${p.distancia_km ? ` (${Number(p.distancia_km).toFixed(1).replace('.', ',')} km)` : ''}</td><td class="d">${p.taxa_entrega > 0 ? formatBRL(p.taxa_entrega) : 'a combinar'}</td></tr>
 <tr class="t"><td>TOTAL</td><td class="d">${formatBRL(p.total)}</td></tr>
 </table>
