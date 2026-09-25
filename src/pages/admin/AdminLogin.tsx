@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { CampoSenha } from '@/components/ui/campo-senha'
 import { useAuth } from '@/lib/auth'
+import { CreditoEvolua } from '@/components/CreditoEvolua'
 import { emailPorTelefone, normalizarIdentificador } from '@/lib/login'
 import { NOME_LOJA } from '@/lib/utils'
 
@@ -114,6 +115,7 @@ export default function AdminLogin({ destino = '/admin', titulo = 'Painel admini
           </Link>
         </p>
       </form>
+      <CreditoEvolua className="text-bege" />
     </div>
   )
 }

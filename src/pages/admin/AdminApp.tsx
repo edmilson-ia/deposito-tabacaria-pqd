@@ -8,6 +8,7 @@ import { cn, NOME_LOJA } from '@/lib/utils'
 import AdminConta from './AdminConta'
 import AdminEsqueci from './AdminEsqueci'
 import AdminLogin from './AdminLogin'
+import { CreditoEvolua } from '@/components/CreditoEvolua'
 import AdminRedefinir from './AdminRedefinir'
 import Categorias from './Categorias'
 import Configuracoes from './Configuracoes'
@@ -144,6 +145,9 @@ function Guard() {
       <main className="mx-auto max-w-6xl px-4 py-4">
         <Outlet />
       </main>
+      <footer className="px-4 pb-6 pt-2 text-bege">
+        <CreditoEvolua />
+      </footer>
     </div>
   )
 }

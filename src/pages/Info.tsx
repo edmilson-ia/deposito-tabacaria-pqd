@@ -1,4 +1,5 @@
 import { Mail, MapPin, MessageCircle, Phone } from 'lucide-react'
+import { CreditoEvolua } from '@/components/CreditoEvolua'
 import { InstagramIcon } from '@/components/InstagramIcon'
 import { buttonVariants } from '@/components/ui/button'
 import { useConfig } from '@/hooks/useCatalogo'
@@ -65,9 +66,10 @@ export function Empresa() {
     <div className="space-y-4">
       <h1 className="text-4xl">{NOME_LOJA}</h1>
       <p className="text-bege/90">
-        Cervejas, refrigerantes, energéticos, gelo e tabacaria. Monte seu pedido no catálogo e finalize pelo WhatsApp.
+        Cervejas, refrigerantes, energéticos, gelo e tabacaria. Monte seu pedido no catálogo e finalize direto pelo aplicativo.
       </p>
-      <p className="text-bege/90">Formas de pagamento: Pix, dinheiro ou cartão na entrega. O valor da entrega é combinado pelo WhatsApp.</p>
+      <p className="text-bege/90">Formas de pagamento: Pix, dinheiro ou cartão (débito/crédito). A entrega é calculada pela distância até o seu endereço.</p>
+      <CreditoEvolua className="pt-6 text-bege" />
     </div>
   )
 }

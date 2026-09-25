@@ -26,4 +26,7 @@ export const UNIDADE_SIGLA: Record<Unidade, string> = {
 /** Os preços do site são os do cartão (+10%); Pix/dinheiro dividem por 1,10 (≈ 9,09% de desconto). */
 export const FATOR_CARTAO = 1.1
 
+/** Instagram da Evolua Automação (crédito discreto no admin e na página Empresa). Vazio = só o texto, sem link. */
+export const EVOLUA_INSTAGRAM_URL = ''
+
 export const NOME_LOJA = 'Depósito e Tabacaria do PQD'
