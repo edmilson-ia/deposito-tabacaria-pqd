@@ -143,8 +143,10 @@ export function CartSheet() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const temItens = itens.length > 0
+
   useEffect(() => {
-    if (etapa !== 'dados' || !enderecoPronto || esperandoCoord) {
+    if (!aberto || etapa === 'ok' || !temItens || !enderecoPronto || esperandoCoord) {
       setFrete('idle')
       return
     }
@@ -155,7 +157,7 @@ export function CartSheet() {
       if (seq.current === minha) setFrete(r ?? 'combinar')
     }, 900)
     return () => clearTimeout(t)
-  }, [etapa, enderecoPronto, form.endereco, form.numero, form.bairro, form.cidade, form.cep, tabelaFrete, cepCoord, esperandoCoord])
+  }, [aberto, etapa, temItens, enderecoPronto, form.endereco, form.numero, form.bairro, form.cidade, form.cep, tabelaFrete, cepCoord, esperandoCoord])
 
   const temEnderecoPreenchido = !!(form.endereco || form.numero || form.bairro || form.cidade || form.complemento || form.cep)
 
@@ -339,8 +341,8 @@ export function CartSheet() {
                       <button type="button" onClick={() => { setCepCoord(null); setResumoEndereco(false); setCepModo('manual'); setEtapa('dados') }} className="rounded-lg border-2 border-preto bg-bege px-3 py-1.5 text-xs font-extrabold">
                         Alterar endereço
                       </button>
-                      <button type="button" onClick={() => { usarOutroEndereco(); setEtapa('dados') }} className="rounded-lg border-2 border-preto bg-ambar px-3 py-1.5 text-xs font-extrabold">
-                        Usar outro endereço
+                      <button type="button" onClick={() => setEtapa('dados')} className="rounded-lg border-2 border-preto bg-ambar px-3 py-1.5 text-xs font-extrabold">
+                        Usar mesmo endereço
                       </button>
                     </div>
                   </div>
@@ -362,8 +364,8 @@ export function CartSheet() {
                         <button type="button" onClick={() => { setCepCoord(null); setResumoEndereco(false); setCepModo('manual') }} className="rounded-lg border-2 border-preto bg-bege px-3 py-1.5 text-xs font-extrabold">
                           Alterar endereço
                         </button>
-                        <button type="button" onClick={usarOutroEndereco} className="rounded-lg border-2 border-preto bg-ambar px-3 py-1.5 text-xs font-extrabold">
-                          Usar outro endereço
+                        <button type="button" onClick={() => document.getElementById('pagamento-grupo')?.scrollIntoView({ block: 'center' })} className="rounded-lg border-2 border-preto bg-ambar px-3 py-1.5 text-xs font-extrabold">
+                          Usar mesmo endereço
                         </button>
                       </div>
                     </div>
