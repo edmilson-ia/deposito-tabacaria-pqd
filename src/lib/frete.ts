@@ -1,6 +1,9 @@
 /** Frete por distância: o n8n (OpenRouteService) devolve os km; a tabela de valores é da loja (painel > Loja). */
-const FRETE_URL =
+/** Rota pelo mapa (procura a rua pelo nome; usa a cota diária de geocodificação): só como reserva. */
+const FRETE_URL_MAPA =
   (import.meta.env?.VITE_FRETE_URL as string | undefined) ?? 'https://n8n.srv1974666.hstgr.cloud/webhook/deposito-frete'
+/** Rota pelas coordenadas do CEP (não gasta geocodificação; é o caminho principal). */
+const FRETE_URL_CEP = 'https://n8n.srv1974666.hstgr.cloud/webhook/deposito-frete-cep'
 
 export interface FaixaFrete {
   /** até quantos km (inclusive) vale esta faixa */
@@ -88,30 +91,34 @@ export interface Frete {
   endereco?: string
 }
 
-/** Devolve null se o endereço não foi encontrado ou o serviço falhou: a entrega fica "a combinar". */
-export async function calcularFrete(
-  d: { endereco: string; numero: string; bairro: string; cidade: string; cep: string; lat?: number; lng?: number },
-  tabela: TabelaFrete = TABELA_PADRAO,
-): Promise<Frete | null> {
+async function chamar(url: string, corpo: object): Promise<Frete | null> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), 15000)
   try {
-    const res = await fetch(FRETE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      // ViaCEP acrescenta apelidos depois do nome ("Rua X - Tio Nilton"): o mapa só acha a rua sem o apelido
-      body: JSON.stringify({ rua: d.endereco.replace(/\s+-\s+.*$/, '').trim(), numero: d.numero, bairro: d.bairro, cidade: d.cidade, cep: d.cep, lat: d.lat, lng: d.lng }),
-      signal: ctrl.signal,
-    })
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo), signal: ctrl.signal })
     if (!res.ok) return null
     const j = (await res.json()) as { ok?: unknown; km?: unknown; endereco?: unknown }
     if (j.ok !== true || typeof j.km !== 'number' || !Number.isFinite(j.km) || j.km < 0) return null
-    const taxa = calcularTaxa(j.km, tabela)
-    if (!Number.isFinite(taxa) || taxa < FRETE_MIN || taxa > FRETE_MAX) return null
-    return { km: j.km, taxa, endereco: typeof j.endereco === 'string' ? j.endereco : undefined }
+    return { km: j.km, taxa: 0, endereco: typeof j.endereco === 'string' ? j.endereco : undefined }
   } catch {
     return null
   } finally {
     clearTimeout(timer)
   }
+}
+
+/** Devolve null se o endereço não foi encontrado ou o serviço falhou: a entrega fica "a combinar". */
+export async function calcularFrete(
+  d: { endereco: string; numero: string; bairro: string; cidade: string; cep: string; lat?: number; lng?: number },
+  tabela: TabelaFrete = TABELA_PADRAO,
+): Promise<Frete | null> {
+  // ViaCEP acrescenta apelidos depois do nome ("Rua X - Tio Nilton"): o mapa só acha a rua sem o apelido
+  const corpo = { rua: d.endereco.replace(/\s+-\s+.*$/, '').trim(), numero: d.numero, bairro: d.bairro, cidade: d.cidade, cep: d.cep, lat: d.lat, lng: d.lng }
+  let r: Frete | null = null
+  if (typeof d.lat === 'number' && typeof d.lng === 'number') r = await chamar(FRETE_URL_CEP, corpo)
+  if (!r) r = await chamar(FRETE_URL_MAPA, corpo)
+  if (!r) return null
+  const taxa = calcularTaxa(r.km, tabela)
+  if (!Number.isFinite(taxa) || taxa < FRETE_MIN || taxa > FRETE_MAX) return null
+  return { ...r, taxa }
 }
