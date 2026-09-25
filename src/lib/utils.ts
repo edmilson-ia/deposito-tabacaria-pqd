@@ -27,6 +27,6 @@ export const UNIDADE_SIGLA: Record<Unidade, string> = {
 export const FATOR_CARTAO = 1.1
 
 /** Instagram da Evolua Automação (crédito discreto no admin e na página Empresa). Vazio = só o texto, sem link. */
-export const EVOLUA_INSTAGRAM_URL = ''
+export const EVOLUA_INSTAGRAM_URL = 'https://www.instagram.com/evolua_automacao/'
 
 export const NOME_LOJA = 'Depósito e Tabacaria do PQD'
