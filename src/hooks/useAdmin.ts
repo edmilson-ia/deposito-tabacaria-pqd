@@ -20,6 +20,7 @@ export interface PedidoAdmin {
   status: StatusPedido
   total: number
   taxa_entrega: number
+  distancia_km: number | null
   forma_pagamento: 'pix' | 'dinheiro' | 'cartao'
   troco_para: number | null
   observacoes: string | null
@@ -103,7 +104,7 @@ export function useAdminPedidos(status: StatusPedido | 'todos') {
       let q = supabase
         .from('pedidos')
         .select(
-          'id, numero_diario, nome_cliente, telefone, endereco, status, total, taxa_entrega, forma_pagamento, troco_para, observacoes, criado_em, itens_pedido(id, nome_produto, quantidade, preco_unitario)',
+          'id, numero_diario, nome_cliente, telefone, endereco, status, total, taxa_entrega, distancia_km, forma_pagamento, troco_para, observacoes, criado_em, itens_pedido(id, nome_produto, quantidade, preco_unitario)',
         )
         .order('criado_em', { ascending: false })
         .limit(200)

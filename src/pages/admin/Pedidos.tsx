@@ -43,7 +43,7 @@ function CartaoPedido({ p }: { p: PedidoAdmin }) {
       <p className="text-sm">
         {FORMAS_PAGAMENTO[p.forma_pagamento]}
         {p.troco_para ? ` · troco para ${formatBRL(p.troco_para)}` : ''}
-        {p.taxa_entrega > 0 ? ` · entrega ${formatBRL(p.taxa_entrega)}` : ' · entrega a combinar'}
+        {p.taxa_entrega > 0 ? ` · entrega ${formatBRL(p.taxa_entrega)}${p.distancia_km ? ` (${Number(p.distancia_km).toFixed(1).replace('.', ',')} km)` : ''}` : ' · entrega a combinar'}
       </p>
       {p.observacoes && <p className="mt-1 rounded bg-white/60 p-2 text-sm italic">“{p.observacoes}”</p>}
 

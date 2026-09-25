@@ -1,5 +1,6 @@
 import type { CartItem } from './cart'
-import { parseValor, type CheckoutDados } from './schemas'
+import type { Frete } from './frete'
+import { enderecoCompleto, parseValor, type CheckoutDados } from './schemas'
 import { supabase } from './supabase'
 
 export class PedidoError extends Error {}
@@ -13,7 +14,7 @@ export interface PedidoCriado {
  * Salva o pedido via RPC (o servidor recalcula preços e total).
  * Só é chamado com o carrinho ainda intacto: quem chama limpa o carrinho apenas se isto retornar.
  */
-export async function criarPedido(dados: CheckoutDados, itens: CartItem[]): Promise<PedidoCriado> {
+export async function criarPedido(dados: CheckoutDados, itens: CartItem[], frete: Frete | null = null): Promise<PedidoCriado> {
   const troco =
     dados.forma_pagamento === 'dinheiro' && dados.troco_para ? parseValor(dados.troco_para) : null
 
@@ -21,7 +22,9 @@ export async function criarPedido(dados: CheckoutDados, itens: CartItem[]): Prom
     payload: {
       nome: dados.nome,
       telefone: dados.telefone,
-      endereco: dados.endereco,
+      endereco: enderecoCompleto(dados),
+      taxa_entrega: frete ? frete.taxa : null,
+      distancia_km: frete ? frete.km : null,
       forma_pagamento: dados.forma_pagamento,
       troco_para: troco,
       observacoes: dados.observacoes || null,

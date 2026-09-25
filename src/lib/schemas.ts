@@ -17,6 +17,12 @@ export function mascararTelefone(s: string): string {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
 }
 
+/** 21725030 → 21725-030 enquanto digita */
+export function mascararCep(s: string): string {
+  const d = apenasDigitos(s).slice(0, 8)
+  return d.length <= 5 ? d : `${d.slice(0, 5)}-${d.slice(5)}`
+}
+
 export const FORMAS_PAGAMENTO = {
   pix: 'Pix',
   dinheiro: 'Dinheiro',
@@ -30,7 +36,14 @@ export const checkoutSchema = z
       .string()
       .transform(apenasDigitos)
       .refine((d) => d.length === 10 || d.length === 11, 'Telefone com DDD, ex.: (21) 99999-8888'),
-    endereco: z.string().trim().min(5, 'Informe rua, número e bairro').max(300, 'Endereço muito longo'),
+    endereco: z.string().trim().min(3, 'Informe o nome da rua').max(150, 'Nome da rua muito longo'),
+    numero: z.string().trim().min(1, 'Informe o número').max(20, 'Número muito longo'),
+    bairro: z.string().trim().min(2, 'Informe o bairro').max(80, 'Bairro muito longo'),
+    complemento: z.string().trim().max(100, 'Máximo de 100 caracteres').optional(),
+    cep: z
+      .string()
+      .transform(apenasDigitos)
+      .refine((d) => d.length === 8, 'CEP com 8 números, ex.: 21725-030'),
     forma_pagamento: z.enum(['pix', 'dinheiro', 'cartao'], { error: 'Escolha a forma de pagamento' }),
     troco_para: z.string().trim().optional(),
     observacoes: z.string().trim().max(500, 'Máximo de 500 caracteres').optional(),
@@ -43,6 +56,11 @@ export const checkoutSchema = z
       }
     }
   })
+
+/** Texto único do endereço (gravado no pedido, na mensagem e no cupom). */
+export function enderecoCompleto(d: { endereco: string; numero: string; bairro: string; complemento?: string; cep: string }): string {
+  return `${d.endereco}, nº ${d.numero}${d.complemento ? ` (${d.complemento})` : ''} - ${d.bairro} - CEP ${mascararCep(d.cep)}`
+}
 
 export type CheckoutInput = z.input<typeof checkoutSchema>
 export type CheckoutDados = z.output<typeof checkoutSchema>

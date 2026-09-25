@@ -1,5 +1,5 @@
 import { ArrowLeft, CheckCircle2, Loader2, Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { ProductImage } from '@/components/ProductImage'
 import { Button } from '@/components/ui/button'
@@ -8,8 +8,9 @@ import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { useConfig } from '@/hooks/useCatalogo'
 import { usePedidosPausados } from '@/hooks/useLicenca'
 import { useCart } from '@/lib/cart'
+import { calcularFrete, type Frete } from '@/lib/frete'
 import { criarPedido, PedidoError } from '@/lib/pedido'
-import { checkoutSchema, FORMAS_PAGAMENTO, mascararTelefone, parseValor, type CheckoutInput } from '@/lib/schemas'
+import { apenasDigitos, checkoutSchema, FORMAS_PAGAMENTO, mascararCep, mascararTelefone, parseValor, type CheckoutInput } from '@/lib/schemas'
 import { cn, formatBRL, UNIDADE_LABEL } from '@/lib/utils'
 import { montarMensagem, urlWhatsapp } from '@/lib/whatsapp'
 
@@ -19,13 +20,13 @@ function lerCliente(): Partial<CheckoutInput> {
   try {
     const raw = localStorage.getItem(CLIENTE_KEY)
     const o = raw ? JSON.parse(raw) : {}
-    return { nome: String(o.nome ?? ''), telefone: String(o.telefone ?? ''), endereco: String(o.endereco ?? '') }
+    return { nome: String(o.nome ?? ''), telefone: String(o.telefone ?? ''), endereco: String(o.endereco ?? ''), numero: String(o.numero ?? ''), bairro: String(o.bairro ?? ''), complemento: String(o.complemento ?? ''), cep: String(o.cep ?? '') }
   } catch {
     return {}
   }
 }
 
-function salvarCliente(d: { nome: string; telefone: string; endereco: string }) {
+function salvarCliente(d: { nome: string; telefone: string; endereco: string; numero: string; bairro: string; complemento?: string; cep: string }) {
   try {
     localStorage.setItem(CLIENTE_KEY, JSON.stringify(d))
   } catch {
@@ -62,8 +63,7 @@ export function CartSheet() {
   const { aberto, fechar, itens, subtotal, alterar, remover, limpar } = useCart()
   const config = useConfig()
   const pausados = usePedidosPausados()
-  const taxa = Number(config.data?.taxa_entrega ?? 0) || 0
-  const total = subtotal + (itens.length ? taxa : 0)
+  const taxaConfig = Number(config.data?.taxa_entrega ?? 0) || 0
 
   const [etapa, setEtapa] = useState<Etapa>('itens')
   const [enviando, setEnviando] = useState(false)
@@ -72,17 +72,42 @@ export function CartSheet() {
     nome: '',
     telefone: '',
     endereco: '',
+    numero: '',
+    bairro: '',
+    complemento: '',
+    cep: '',
     forma_pagamento: undefined as unknown as CheckoutInput['forma_pagamento'],
     troco_para: '',
     observacoes: '',
     ...lerCliente(),
   }))
+  // Frete por km (n8n): 'calculando' | Frete (ok) | 'combinar' (endereço não achado ou serviço fora)
+  const [frete, setFrete] = useState<'idle' | 'calculando' | 'combinar' | Frete>('idle')
+  const seq = useRef(0)
+  const taxa = typeof frete === 'object' ? frete.taxa : taxaConfig
+  const total = subtotal + (itens.length ? taxa : 0)
   const [confirmado, setConfirmado] = useState<{ numero: number; url: string } | null>(null)
 
   const set = <K extends keyof CheckoutInput>(k: K, v: CheckoutInput[K]) => {
     setForm((f) => ({ ...f, [k]: v }))
     setErros((e) => ({ ...e, [k]: undefined }))
   }
+
+  const enderecoPronto = form.endereco.trim().length >= 3 && form.bairro.trim().length >= 2 && form.numero.trim().length > 0 && apenasDigitos(form.cep).length === 8
+
+  useEffect(() => {
+    if (etapa !== 'dados' || !enderecoPronto) {
+      setFrete('idle')
+      return
+    }
+    const minha = ++seq.current
+    setFrete('calculando')
+    const t = setTimeout(async () => {
+      const r = await calcularFrete({ endereco: form.endereco.trim(), numero: form.numero.trim(), bairro: form.bairro.trim(), cep: apenasDigitos(form.cep) })
+      if (seq.current === minha) setFrete(r ?? 'combinar')
+    }, 900)
+    return () => clearTimeout(t)
+  }, [etapa, enderecoPronto, form.endereco, form.numero, form.bairro, form.cep])
 
   function aoMudarAberto(open: boolean) {
     if (open) return
@@ -121,6 +146,11 @@ export function CartSheet() {
       return
     }
 
+    if (frete === 'calculando') {
+      toast.info('Calculando a entrega… aguarde um instante.')
+      return
+    }
+
     // O número da loja vem do banco; sem ele não há para onde enviar — falha ANTES de salvar o pedido.
     const numero = config.data?.whatsapp_numero ?? ''
     const testeUrl = urlWhatsapp(numero, 'x')
@@ -131,10 +161,11 @@ export function CartSheet() {
 
     setEnviando(true)
     try {
-      const pedido = await criarPedido(dados, itens)
-      const texto = montarMensagem({ numeroDiario: pedido.numeroDiario, itens, subtotal, taxaEntrega: itens.length ? taxa : 0, total, dados })
+      const freteOk = typeof frete === 'object' ? frete : null
+      const pedido = await criarPedido(dados, itens, freteOk)
+      const texto = montarMensagem({ numeroDiario: pedido.numeroDiario, itens, subtotal, taxaEntrega: itens.length ? taxa : 0, distanciaKm: freteOk?.km, total, dados })
       const url = urlWhatsapp(numero, texto)!
-      salvarCliente({ nome: dados.nome, telefone: form.telefone, endereco: dados.endereco })
+      salvarCliente({ nome: dados.nome, telefone: form.telefone, endereco: dados.endereco, numero: dados.numero, bairro: dados.bairro, complemento: dados.complemento, cep: form.cep })
       limpar()
       setConfirmado({ numero: pedido.numeroDiario, url })
       setEtapa('ok')
@@ -233,9 +264,26 @@ export function CartSheet() {
                   <Campo id="telefone" label="Telefone (WhatsApp)" erro={erros.telefone}>
                     <input id="telefone" type="tel" inputMode="tel" autoComplete="tel-national" value={form.telefone} onChange={(e) => set('telefone', mascararTelefone(e.target.value))} aria-invalid={!!erros.telefone} aria-describedby={erros.telefone ? 'telefone-erro' : undefined} className={inputCls(erros.telefone)} placeholder="(21) 99999-8888" />
                   </Campo>
-                  <Campo id="endereco" label="Endereço e bairro" erro={erros.endereco}>
-                    <textarea id="endereco" autoComplete="street-address" rows={2} value={form.endereco} onChange={(e) => set('endereco', e.target.value)} aria-invalid={!!erros.endereco} aria-describedby={erros.endereco ? 'endereco-erro' : undefined} className={cn(inputCls(erros.endereco), 'h-auto py-2')} placeholder="Rua, número, complemento, bairro" />
+                  <Campo id="endereco" label="Rua" erro={erros.endereco}>
+                    <textarea id="endereco" autoComplete="street-address" rows={2} value={form.endereco} onChange={(e) => set('endereco', e.target.value)} aria-invalid={!!erros.endereco} aria-describedby={erros.endereco ? 'endereco-erro' : undefined} className={cn(inputCls(erros.endereco), 'h-auto py-2')} placeholder="Ex.: Rua Piraquara" />
                   </Campo>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Campo id="numero" label="Número" erro={erros.numero}>
+                      <input id="numero" inputMode="numeric" autoComplete="off" value={form.numero} onChange={(e) => set('numero', e.target.value)} aria-invalid={!!erros.numero} aria-describedby={erros.numero ? 'numero-erro' : undefined} className={inputCls(erros.numero)} placeholder="Ex.: 100" />
+                    </Campo>
+                    <Campo id="bairro" label="Bairro" erro={erros.bairro}>
+                      <input id="bairro" autoComplete="address-level3" value={form.bairro} onChange={(e) => set('bairro', e.target.value)} aria-invalid={!!erros.bairro} aria-describedby={erros.bairro ? 'bairro-erro' : undefined} className={inputCls(erros.bairro)} placeholder="Ex.: Realengo" />
+                    </Campo>
+                    <Campo id="cep" label="CEP" erro={erros.cep}>
+                      <input id="cep" inputMode="numeric" autoComplete="postal-code" value={form.cep} onChange={(e) => set('cep', mascararCep(e.target.value))} aria-invalid={!!erros.cep} aria-describedby={erros.cep ? 'cep-erro' : undefined} className={inputCls(erros.cep)} placeholder="21725-030" />
+                    </Campo>
+                  </div>
+                  <Campo id="complemento" label="Complemento (opcional)" erro={erros.complemento}>
+                    <input id="complemento" value={form.complemento ?? ''} onChange={(e) => set('complemento', e.target.value)} aria-invalid={!!erros.complemento} className={inputCls(erros.complemento)} placeholder="Ex.: casa 2, apto 301, fundos" />
+                  </Campo>
+                  {typeof frete === 'object' && frete.endereco && (
+                    <p className="-mt-2 text-xs text-preto/80">Entrega para: {frete.endereco} · {frete.km.toFixed(1).replace('.', ',')} km</p>
+                  )}
 
                   <fieldset>
                     <legend className="mb-1 text-sm font-extrabold">Forma de pagamento</legend>
@@ -280,8 +328,8 @@ export function CartSheet() {
                   <dd className="font-bold">{formatBRL(subtotal)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt>Entrega</dt>
-                  <dd className="font-bold">{taxa > 0 ? formatBRL(taxa) : 'A combinar'}</dd>
+                  <dt>Entrega{typeof frete === 'object' ? ` (${frete.km.toFixed(1).replace('.', ',')} km)` : ''}</dt>
+                  <dd className="font-bold">{frete === 'calculando' ? 'Calculando…' : taxa > 0 ? formatBRL(taxa) : 'A combinar'}</dd>
                 </div>
                 <div className="flex justify-between text-lg font-extrabold">
                   <dt>{taxa > 0 ? 'Total' : 'Total (sem entrega)'}</dt>

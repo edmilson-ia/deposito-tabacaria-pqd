@@ -37,7 +37,7 @@ export function htmlCupom(p: PedidoAdmin): string {
 <hr>
 <table>
 <tr><td>Subtotal</td><td class="d">${formatBRL(subtotal)}</td></tr>
-<tr><td>Entrega</td><td class="d">${p.taxa_entrega > 0 ? formatBRL(p.taxa_entrega) : 'a combinar'}</td></tr>
+<tr><td>Entrega${p.distancia_km ? ` (${Number(p.distancia_km).toFixed(1).replace('.', ',')} km)` : ''}</td><td class="d">${p.taxa_entrega > 0 ? formatBRL(p.taxa_entrega) : 'a combinar'}</td></tr>
 <tr class="t"><td>TOTAL</td><td class="d">${formatBRL(p.total)}</td></tr>
 </table>
 <hr>

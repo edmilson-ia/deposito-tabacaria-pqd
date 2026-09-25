@@ -1,5 +1,5 @@
 import type { CartItem } from './cart'
-import { FORMAS_PAGAMENTO, parseValor, type CheckoutDados } from './schemas'
+import { enderecoCompleto, FORMAS_PAGAMENTO, parseValor, type CheckoutDados } from './schemas'
 import { formatBRL, NOME_LOJA, UNIDADE_SIGLA } from './utils'
 
 interface Resumo {
@@ -7,11 +7,12 @@ interface Resumo {
   itens: CartItem[]
   subtotal: number
   taxaEntrega: number
+  distanciaKm?: number
   total: number
   dados: CheckoutDados
 }
 
-export function montarMensagem({ numeroDiario, itens, subtotal, taxaEntrega, total, dados }: Resumo): string {
+export function montarMensagem({ numeroDiario, itens, subtotal, taxaEntrega, distanciaKm, total, dados }: Resumo): string {
   const linhas = itens.map((i) => `• ${i.quantidade}x ${i.nome} (${UNIDADE_SIGLA[i.unidade]}) — ${formatBRL(i.quantidade * i.preco)}`)
   const pagamento =
     dados.forma_pagamento === 'dinheiro' && dados.troco_para
@@ -25,12 +26,12 @@ export function montarMensagem({ numeroDiario, itens, subtotal, taxaEntrega, tot
     '',
     `Subtotal: ${formatBRL(subtotal)}`,
     // taxa 0 = entrega "a combinar" (valor depende da distância, combinado pelo WhatsApp)
-    taxaEntrega > 0 ? `Entrega: ${formatBRL(taxaEntrega)}` : 'Entrega: a combinar',
+    taxaEntrega > 0 ? `Entrega${distanciaKm ? ` (${distanciaKm.toFixed(1).replace('.', ',')} km)` : ''}: ${formatBRL(taxaEntrega)}` : 'Entrega: a combinar',
     taxaEntrega > 0 ? `*Total: ${formatBRL(total)}*` : `*Total (sem entrega): ${formatBRL(total)}*`,
     '',
     `Nome: ${dados.nome}`,
     `Telefone: ${dados.telefone}`,
-    `Endereço: ${dados.endereco}`,
+    `Endereço: ${enderecoCompleto(dados)}`,
     `Pagamento: ${pagamento}`,
     ...(dados.observacoes ? [`Observações: ${dados.observacoes}`] : []),
   ].join('\n')
