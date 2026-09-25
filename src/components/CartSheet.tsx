@@ -142,7 +142,11 @@ export function CartSheet() {
       setErros(novos)
       toast.error('Confira os campos destacados.')
       // espera o React aplicar aria-invalid antes de focar o primeiro campo com erro
-      setTimeout(() => document.getElementById('checkout-form')?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(), 0)
+      setTimeout(() => {
+        const el = document.getElementById('checkout-form')?.querySelector<HTMLElement>('[aria-invalid="true"]')
+        el?.focus()
+        el?.scrollIntoView({ block: 'center' })
+      }, 0)
       return
     }
     const dados = r.data
@@ -284,11 +288,11 @@ export function CartSheet() {
                   )}
 
                   <fieldset>
-                    <legend className="mb-1 text-sm font-extrabold">Forma de pagamento</legend>
+                    <legend className="mb-1 text-sm font-extrabold">Forma de pagamento (obrigatória)</legend>
                     <p className="mb-2 rounded-lg border-2 border-preto bg-ambar px-3 py-2 text-center font-titulo text-xl leading-tight shadow-adesivo-sm">
                       Desconto de 10% no Dinheiro e Pix
                     </p>
-                    <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-invalid={!!erros.forma_pagamento}>
+                    <div className="grid grid-cols-3 gap-2" role="radiogroup" id="pagamento-grupo" tabIndex={-1} aria-invalid={!!erros.forma_pagamento} aria-label="Forma de pagamento">
                       {(Object.keys(FORMAS_PAGAMENTO) as (keyof typeof FORMAS_PAGAMENTO)[]).map((k) => (
                         <label
                           key={k}

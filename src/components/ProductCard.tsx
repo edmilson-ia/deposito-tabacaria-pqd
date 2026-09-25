@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog'
-import { Minus, Plus, ShoppingCart, X, ZoomIn } from 'lucide-react'
+import { Minus, Plus, ShoppingCart, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ProductImage } from '@/components/ProductImage'
@@ -29,9 +29,6 @@ export function ProductCard({ produto }: { produto: Produto }) {
               className="relative block w-full cursor-zoom-in"
             >
               <ProductImage src={produto.imagem_url} alt={produto.nome} className="aspect-square w-full border-b-2 border-preto" />
-              <span className="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full border-2 border-preto bg-bege" aria-hidden>
-                <ZoomIn className="h-4 w-4" />
-              </span>
             </Dialog.Trigger>
             <Dialog.Portal>
               <Dialog.Overlay className="fixed inset-0 z-[80] bg-black/80" />
