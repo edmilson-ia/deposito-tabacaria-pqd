@@ -4,7 +4,6 @@ import { toast } from 'sonner'
 import { ProductImage } from '@/components/ProductImage'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
-import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { useConfig } from '@/hooks/useCatalogo'
 import { usePedidosPausados } from '@/hooks/useLicenca'
 import { useCart } from '@/lib/cart'
@@ -12,7 +11,6 @@ import { calcularFrete, type Frete } from '@/lib/frete'
 import { criarPedido, PedidoError } from '@/lib/pedido'
 import { apenasDigitos, checkoutSchema, FORMAS_PAGAMENTO, mascararCep, mascararTelefone, parseValor, type CheckoutInput } from '@/lib/schemas'
 import { cn, formatBRL, UNIDADE_LABEL } from '@/lib/utils'
-import { montarMensagem, urlWhatsapp } from '@/lib/whatsapp'
 
 const CLIENTE_KEY = 'pqd_cliente_v1'
 
@@ -86,7 +84,7 @@ export function CartSheet() {
   const seq = useRef(0)
   const taxa = typeof frete === 'object' ? frete.taxa : taxaConfig
   const total = subtotal + (itens.length ? taxa : 0)
-  const [confirmado, setConfirmado] = useState<{ numero: number; url: string } | null>(null)
+  const [confirmado, setConfirmado] = useState<{ numero: number } | null>(null)
 
   const set = <K extends keyof CheckoutInput>(k: K, v: CheckoutInput[K]) => {
     setForm((f) => ({ ...f, [k]: v }))
@@ -151,26 +149,14 @@ export function CartSheet() {
       return
     }
 
-    // O número da loja vem do banco; sem ele não há para onde enviar — falha ANTES de salvar o pedido.
-    const numero = config.data?.whatsapp_numero ?? ''
-    const testeUrl = urlWhatsapp(numero, 'x')
-    if (!testeUrl) {
-      toast.error('O WhatsApp da loja ainda não foi configurado. Seu carrinho foi mantido — tente mais tarde.')
-      return
-    }
-
     setEnviando(true)
     try {
       const freteOk = typeof frete === 'object' ? frete : null
       const pedido = await criarPedido(dados, itens, freteOk)
-      const texto = montarMensagem({ numeroDiario: pedido.numeroDiario, itens, subtotal, taxaEntrega: itens.length ? taxa : 0, distanciaKm: freteOk?.km, total, dados })
-      const url = urlWhatsapp(numero, texto)!
       salvarCliente({ nome: dados.nome, telefone: form.telefone, endereco: dados.endereco, numero: dados.numero, bairro: dados.bairro, complemento: dados.complemento, cep: form.cep })
       limpar()
-      setConfirmado({ numero: pedido.numeroDiario, url })
+      setConfirmado({ numero: pedido.numeroDiario })
       setEtapa('ok')
-      // Pode ser bloqueado pelo navegador; a tela de confirmação tem o botão como garantia.
-      window.open(url, '_blank', 'noopener,noreferrer')
     } catch (err) {
       toast.error(err instanceof PedidoError ? err.message : 'Erro inesperado. Seu carrinho foi mantido; tente novamente.')
     } finally {
@@ -195,22 +181,14 @@ export function CartSheet() {
           </SheetClose>
         </div>
         <SheetDescription id="carrinho-desc" className="sr-only">
-          Revise os itens, informe seus dados e finalize o pedido pelo WhatsApp.
+          Revise os itens, informe seus dados e finalize o pedido.
         </SheetDescription>
 
         {etapa === 'ok' && confirmado ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
             <CheckCircle2 className="h-14 w-14 text-verde" aria-hidden />
             <p className="font-titulo text-3xl">Pedido #{confirmado.numero} registrado!</p>
-            <p className="text-sm">Se o WhatsApp não abriu sozinho, toque no botão abaixo para enviar a mensagem do pedido.</p>
-            <a
-              href={confirmado.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg border-2 border-preto bg-zap font-bold shadow-adesivo-sm"
-            >
-              <WhatsAppIcon className="h-5 w-5" /> Abrir WhatsApp
-            </a>
+            <p className="text-sm">Recebemos o seu pedido e já vamos separá-lo. Guarde o número acima para qualquer dúvida.</p>
             <Button variant="outline" className="w-full" onClick={() => aoMudarAberto(false)}>
               Voltar ao catálogo
             </Button>
@@ -351,7 +329,7 @@ export function CartSheet() {
                     </>
                   ) : (
                     <>
-                      <WhatsAppIcon className="h-5 w-5" /> Finalizar pelo WhatsApp
+                      <CheckCircle2 className="h-5 w-5" aria-hidden /> Finalizar pedido
                     </>
                   )}
                 </Button>

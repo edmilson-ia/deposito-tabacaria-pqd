@@ -1,10 +1,10 @@
 import { Printer, RefreshCw } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { STATUS_LABEL, useAdminPedidos, useAtualizarStatus, type PedidoAdmin, type StatusPedido } from '@/hooks/useAdmin'
-import { imprimirCupom } from '@/lib/cupom'
+import { imprimirCupom, imprimirCupomAutomatico } from '@/lib/cupom'
 import { FORMAS_PAGAMENTO } from '@/lib/schemas'
 import { cn, formatBRL } from '@/lib/utils'
 
@@ -87,14 +87,66 @@ function CartaoPedido({ p }: { p: PedidoAdmin }) {
   )
 }
 
+const AUTO_KEY = 'pqd_auto_imprimir'
+const IMPRESSOS_KEY = 'pqd_pedidos_impressos'
+
+function lerImpressos(): number[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(IMPRESSOS_KEY) ?? '[]')
+    return Array.isArray(v) ? v.filter((n): n is number => typeof n === 'number') : []
+  } catch {
+    return []
+  }
+}
+function gravarImpressos(ids: number[]) {
+  try {
+    localStorage.setItem(IMPRESSOS_KEY, JSON.stringify(ids.slice(-500)))
+  } catch {
+    /* sem armazenamento: pode reimprimir ao recarregar */
+  }
+}
+
 export default function Pedidos() {
   const [status, setStatus] = useState<StatusPedido | 'todos'>('todos')
-  const pedidos = useAdminPedidos(status)
+  const [auto, setAuto] = useState(() => {
+    try {
+      return localStorage.getItem(AUTO_KEY) === '1'
+    } catch {
+      return false
+    }
+  })
+  const pedidos = useAdminPedidos(status, auto ? 15000 : undefined)
+
+  function alternarAuto(ligar: boolean) {
+    setAuto(ligar)
+    try {
+      localStorage.setItem(AUTO_KEY, ligar ? '1' : '0')
+    } catch {
+      /* ignora */
+    }
+    // Ao ligar, os pedidos que já existem contam como impressos: só os NOVOS saem sozinhos.
+    if (ligar && pedidos.data) gravarImpressos([...new Set([...lerImpressos(), ...pedidos.data.map((p) => p.id)])])
+  }
+
+  // Impressão automática: imprime cada pedido novo que ainda não saiu nesta máquina.
+  useEffect(() => {
+    if (!auto || !pedidos.data) return
+    const impressos = new Set(lerImpressos())
+    const novos = pedidos.data.filter((p) => p.status === 'novo' && !impressos.has(p.id)).reverse()
+    if (!novos.length) return
+    gravarImpressos([...impressos, ...novos.map((p) => p.id)])
+    novos.forEach((p, i) => setTimeout(() => imprimirCupomAutomatico(p), i * 1500))
+    toast.success(`${novos.length} pedido(s) novo(s): imprimindo o talão.`)
+  }, [auto, pedidos.data])
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="mr-auto text-3xl">Pedidos</h1>
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-preto bg-bege px-3 py-2 text-xs font-extrabold text-preto">
+          <input type="checkbox" checked={auto} onChange={(e) => alternarAuto(e.target.checked)} className="h-4 w-4" />
+          Imprimir pedidos novos automaticamente
+        </label>
         <Button variant="outline" onClick={() => pedidos.refetch()} disabled={pedidos.isFetching}>
           <RefreshCw className={cn('h-4 w-4', pedidos.isFetching && 'animate-spin')} aria-hidden /> Atualizar
         </Button>

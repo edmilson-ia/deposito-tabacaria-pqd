@@ -97,7 +97,7 @@ export function useExcluirProduto() {
   })
 }
 
-export function useAdminPedidos(status: StatusPedido | 'todos') {
+export function useAdminPedidos(status: StatusPedido | 'todos', atualizarACada?: number) {
   return useQuery({
     queryKey: ['admin', 'pedidos', status],
     queryFn: async (): Promise<PedidoAdmin[]> => {
@@ -114,6 +114,7 @@ export function useAdminPedidos(status: StatusPedido | 'todos') {
       return (data ?? []) as PedidoAdmin[]
     },
     refetchOnWindowFocus: true,
+    refetchInterval: atualizarACada || false,
   })
 }
 

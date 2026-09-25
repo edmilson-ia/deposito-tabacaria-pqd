@@ -59,3 +59,19 @@ export function imprimirCupom(p: PedidoAdmin): boolean {
   setTimeout(() => w.print(), 400)
   return true
 }
+
+/**
+ * Imprime o cupom sem abrir janela (não é bloqueado como pop-up), usado na impressão automática.
+ * O diálogo de impressão do navegador ainda aparece, a menos que o Chrome rode com --kiosk-printing.
+ */
+export function imprimirCupomAutomatico(p: PedidoAdmin): void {
+  const f = document.createElement('iframe')
+  f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'
+  f.srcdoc = htmlCupom(p)
+  f.onload = () => {
+    f.contentWindow?.focus()
+    f.contentWindow?.print()
+    setTimeout(() => f.remove(), 60000)
+  }
+  document.body.appendChild(f)
+}
