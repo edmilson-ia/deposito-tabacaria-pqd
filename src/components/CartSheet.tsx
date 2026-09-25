@@ -285,7 +285,10 @@ export function CartSheet() {
         {etapa === 'ok' && confirmado ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
             <CheckCircle2 className="h-14 w-14 text-verde" aria-hidden />
-            <p className="font-titulo text-3xl">Pedido #{confirmado.numero} registrado!</p>
+            <p className="font-titulo text-3xl">Pedido #{confirmado.numero} confirmado!</p>
+            <p className="w-full rounded-xl border-2 border-preto bg-ambar px-3 py-2 font-titulo text-2xl leading-tight shadow-adesivo-sm">
+              Tempo de entrega: no máximo 60 minutos
+            </p>
             <p className="text-sm">Recebemos o seu pedido e já vamos separá-lo. Guarde o número acima para qualquer dúvida.</p>
             <Button variant="outline" className="w-full" onClick={() => aoMudarAberto(false)}>
               Voltar ao catálogo
@@ -496,17 +499,22 @@ export function CartSheet() {
                   Continuar
                 </Button>
               ) : (
-                <Button type="submit" form="checkout-form" disabled={enviando || pausados} className="h-12 w-full text-base">
-                  {enviando ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> Enviando…
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="h-5 w-5" aria-hidden /> Finalizar pedido
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" onClick={() => setEtapa('itens')} disabled={enviando} aria-label="Voltar para os itens do pedido" className="h-12 shrink-0 px-4 text-base">
+                    <ArrowLeft className="h-5 w-5" aria-hidden /> Voltar
+                  </Button>
+                  <Button type="submit" form="checkout-form" disabled={enviando || pausados} className="h-12 flex-1 text-base">
+                    {enviando ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> Enviando…
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-5 w-5" aria-hidden /> Finalizar pedido
+                      </>
+                    )}
+                  </Button>
+                </div>
               )}
               {pausados && (
                 <p role="alert" className="rounded-lg border-2 border-preto bg-ambar p-2 text-center text-xs font-extrabold">
