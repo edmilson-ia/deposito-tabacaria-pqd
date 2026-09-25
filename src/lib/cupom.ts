@@ -18,9 +18,9 @@ export function htmlCupom(p: PedidoAdmin): string {
     .join('')
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Pedido ${numero}</title>
 <style>
-  @page { margin: 8mm; }
+  @page { margin: 4mm; }
   body { font: 13px/1.35 "Courier New", monospace; color: #000; margin: 0; }
-  .c { width: 80mm; margin: 0 auto; }
+  .c { width: 100%; max-width: 80mm; margin: 0 auto; }
   h1 { font-size: 16px; text-align: center; margin: 0 0 2px; }
   .m { text-align: center; }
   hr { border: 0; border-top: 1px dashed #000; margin: 6px 0; }
