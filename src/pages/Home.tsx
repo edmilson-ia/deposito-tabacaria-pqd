@@ -54,6 +54,9 @@ export default function Home() {
             <Megaphone className="h-5 w-5" aria-hidden /> Promoção
           </a>
         )}
+        <p className="w-full max-w-sm rounded-xl border-2 border-preto bg-ambar px-3 py-2 font-titulo text-2xl leading-tight text-preto shadow-adesivo-sm">
+          Pix e Dinheiro têm desconto de 10%
+        </p>
       </section>
 
       <section aria-labelledby="cat-titulo">
