@@ -7,6 +7,7 @@ import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle } from '@
 import { useConfig } from '@/hooks/useCatalogo'
 import { usePedidosPausados } from '@/hooks/useLicenca'
 import { useCart } from '@/lib/cart'
+import { buscarCep } from '@/lib/cep'
 import { calcularFrete, type Frete } from '@/lib/frete'
 import { criarPedido, PedidoError } from '@/lib/pedido'
 import { apenasDigitos, checkoutSchema, enderecoCompleto, FORMAS_PAGAMENTO, mascararCep, mascararTelefone, parseValor, type CheckoutInput } from '@/lib/schemas'
@@ -18,13 +19,13 @@ function lerCliente(): Partial<CheckoutInput> {
   try {
     const raw = localStorage.getItem(CLIENTE_KEY)
     const o = raw ? JSON.parse(raw) : {}
-    return { nome: String(o.nome ?? ''), telefone: String(o.telefone ?? ''), endereco: String(o.endereco ?? ''), numero: String(o.numero ?? ''), bairro: String(o.bairro ?? ''), complemento: String(o.complemento ?? ''), cep: String(o.cep ?? '') }
+    return { nome: String(o.nome ?? ''), telefone: String(o.telefone ?? ''), endereco: String(o.endereco ?? ''), numero: String(o.numero ?? ''), bairro: String(o.bairro ?? ''), cidade: String(o.cidade ?? ''), complemento: String(o.complemento ?? ''), cep: String(o.cep ?? '') }
   } catch {
     return {}
   }
 }
 
-function salvarCliente(d: { nome: string; telefone: string; endereco: string; numero: string; bairro: string; complemento?: string; cep: string }) {
+function salvarCliente(d: { nome: string; telefone: string; endereco: string; numero: string; bairro: string; cidade: string; complemento?: string; cep: string }) {
   try {
     localStorage.setItem(CLIENTE_KEY, JSON.stringify(d))
   } catch {
@@ -72,6 +73,7 @@ export function CartSheet() {
     endereco: '',
     numero: '',
     bairro: '',
+    cidade: '',
     complemento: '',
     cep: '',
     forma_pagamento: undefined as unknown as CheckoutInput['forma_pagamento'],
@@ -89,8 +91,13 @@ export function CartSheet() {
   // Endereço lembrado do último pedido: mostra resumo com botão "Alterar endereço" em vez dos campos.
   const [resumoEndereco, setResumoEndereco] = useState(() => {
     const c = lerCliente()
-    return !!c.endereco && c.endereco.trim().length >= 3 && !!c.bairro && !!c.numero && apenasDigitos(c.cep ?? '').length === 8
+    return !!c.endereco && c.endereco.trim().length >= 3 && !!c.bairro && !!c.cidade && !!c.numero && apenasDigitos(c.cep ?? '').length === 8
   })
+  // CEP primeiro: 'idle' (só o CEP) | 'buscando' | 'ok' (rua/bairro/cidade vieram do CEP: só falta o número) | 'manual' (digitar tudo)
+  const [cepModo, setCepModo] = useState<'idle' | 'buscando' | 'ok' | 'manual'>('idle')
+  const [cepAviso, setCepAviso] = useState('')
+  // CEP já preenchido (dados antigos ou salvos) sem busca feita: mostra todos os campos para conferir
+  const modoCep = cepModo === 'idle' && apenasDigitos(form.cep).length === 8 ? 'manual' : cepModo
   const [confirmado, setConfirmado] = useState<{ numero: number } | null>(null)
 
   const set = <K extends keyof CheckoutInput>(k: K, v: CheckoutInput[K]) => {
@@ -99,7 +106,7 @@ export function CartSheet() {
   }
 
   const temErroEndereco = !!(erros.endereco || erros.numero || erros.bairro || erros.cep || erros.complemento)
-  const enderecoPronto = form.endereco.trim().length >= 3 && form.bairro.trim().length >= 2 && form.numero.trim().length > 0 && apenasDigitos(form.cep).length === 8
+  const enderecoPronto = form.endereco.trim().length >= 3 && form.bairro.trim().length >= 2 && form.cidade.trim().length >= 2 && form.numero.trim().length > 0 && apenasDigitos(form.cep).length === 8
 
   useEffect(() => {
     if (etapa !== 'dados' || !enderecoPronto) {
@@ -109,20 +116,50 @@ export function CartSheet() {
     const minha = ++seq.current
     setFrete('calculando')
     const t = setTimeout(async () => {
-      const r = await calcularFrete({ endereco: form.endereco.trim(), numero: form.numero.trim(), bairro: form.bairro.trim(), cep: apenasDigitos(form.cep) })
+      const r = await calcularFrete({ endereco: form.endereco.trim(), numero: form.numero.trim(), bairro: form.bairro.trim(), cidade: form.cidade.trim(), cep: apenasDigitos(form.cep) })
       if (seq.current === minha) setFrete(r ?? 'combinar')
     }, 900)
     return () => clearTimeout(t)
-  }, [etapa, enderecoPronto, form.endereco, form.numero, form.bairro, form.cep])
+  }, [etapa, enderecoPronto, form.endereco, form.numero, form.bairro, form.cidade, form.cep])
 
-  const temEnderecoPreenchido = !!(form.endereco || form.numero || form.bairro || form.complemento || form.cep)
+  const temEnderecoPreenchido = !!(form.endereco || form.numero || form.bairro || form.cidade || form.complemento || form.cep)
 
   /** Limpa os campos de endereço para o cliente digitar outro (não mexe em nome, telefone e pagamento). */
   function usarOutroEndereco() {
-    setForm((f) => ({ ...f, endereco: '', numero: '', bairro: '', complemento: '', cep: '' }))
-    setErros((e) => ({ ...e, endereco: undefined, numero: undefined, bairro: undefined, complemento: undefined, cep: undefined }))
+    setForm((f) => ({ ...f, endereco: '', numero: '', bairro: '', cidade: '', complemento: '', cep: '' }))
+    setErros((e) => ({ ...e, endereco: undefined, numero: undefined, bairro: undefined, cidade: undefined, complemento: undefined, cep: undefined }))
     setResumoEndereco(false)
-    setTimeout(() => document.getElementById('endereco')?.focus(), 0)
+    setCepModo('idle')
+    setTimeout(() => document.getElementById('cep')?.focus(), 0)
+  }
+
+  async function aoDigitarCep(valor: string) {
+    const mascarado = mascararCep(valor)
+    set('cep', mascarado)
+    const d = apenasDigitos(mascarado)
+    if (d.length < 8) {
+      setCepModo('idle')
+      setCepAviso('')
+      return
+    }
+    setCepModo('buscando')
+    setCepAviso('')
+    const r = await buscarCep(d)
+    if (typeof r === 'object') {
+      if (r.rua) {
+        setForm((f) => ({ ...f, endereco: r.rua, bairro: r.bairro || f.bairro, cidade: r.cidade || f.cidade }))
+        setErros((e) => ({ ...e, endereco: undefined, bairro: undefined, cidade: undefined, cep: undefined }))
+        setCepModo('ok')
+      } else {
+        // CEP geral da cidade/bairro: sem rua, o cliente completa
+        setForm((f) => ({ ...f, endereco: '', bairro: r.bairro || f.bairro, cidade: r.cidade || f.cidade }))
+        setCepAviso('Esse CEP não tem rua definida. Digite a rua abaixo.')
+        setCepModo('manual')
+      }
+    } else {
+      setCepAviso(r === 'nao_encontrado' ? 'CEP não encontrado. Confira os números ou digite o endereço.' : 'Não consegui buscar o CEP agora. Digite o endereço.')
+      setCepModo('manual')
+    }
   }
 
   function aoMudarAberto(open: boolean) {
@@ -175,7 +212,7 @@ export function CartSheet() {
     try {
       const freteOk = typeof frete === 'object' ? frete : null
       const pedido = await criarPedido(dados, itens, freteOk)
-      salvarCliente({ nome: dados.nome, telefone: form.telefone, endereco: dados.endereco, numero: dados.numero, bairro: dados.bairro, complemento: dados.complemento, cep: form.cep })
+      salvarCliente({ nome: dados.nome, telefone: form.telefone, endereco: dados.endereco, numero: dados.numero, bairro: dados.bairro, cidade: dados.cidade, complemento: dados.complemento, cep: form.cep })
       limpar()
       setConfirmado({ numero: pedido.numeroDiario })
       setEtapa('ok')
@@ -267,9 +304,9 @@ export function CartSheet() {
                   {resumoEndereco && !temErroEndereco ? (
                     <div className="rounded-lg border-2 border-preto bg-white p-3 text-sm">
                       <p className="font-extrabold">Entregar em:</p>
-                      <p>{enderecoCompleto({ endereco: form.endereco, numero: form.numero, bairro: form.bairro, complemento: form.complemento, cep: form.cep })}</p>
+                      <p>{enderecoCompleto({ endereco: form.endereco, numero: form.numero, bairro: form.bairro, cidade: form.cidade, complemento: form.complemento, cep: form.cep })}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        <button type="button" onClick={() => setResumoEndereco(false)} className="rounded-lg border-2 border-preto bg-bege px-3 py-1.5 text-xs font-extrabold">
+                        <button type="button" onClick={() => { setResumoEndereco(false); setCepModo('manual') }} className="rounded-lg border-2 border-preto bg-bege px-3 py-1.5 text-xs font-extrabold">
                           Alterar endereço
                         </button>
                         <button type="button" onClick={usarOutroEndereco} className="rounded-lg border-2 border-preto bg-ambar px-3 py-1.5 text-xs font-extrabold">
@@ -279,32 +316,61 @@ export function CartSheet() {
                     </div>
                   ) : (
                     <>
-                  {temEnderecoPreenchido && (
-                    <button type="button" onClick={usarOutroEndereco} className="rounded-lg border-2 border-preto bg-ambar px-3 py-1.5 text-xs font-extrabold">
-                      Usar outro endereço
-                    </button>
-                  )}
-                  <Campo id="endereco" label="Rua" erro={erros.endereco}>
-                    <textarea id="endereco" autoComplete="street-address" rows={2} value={form.endereco} onChange={(e) => set('endereco', e.target.value)} aria-invalid={!!erros.endereco} aria-describedby={erros.endereco ? 'endereco-erro' : undefined} className={cn(inputCls(erros.endereco), 'h-auto py-2')} placeholder="Ex.: Rua Piraquara" />
-                  </Campo>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Campo id="numero" label="Número" erro={erros.numero}>
-                      <input id="numero" inputMode="numeric" autoComplete="off" value={form.numero} onChange={(e) => set('numero', e.target.value)} aria-invalid={!!erros.numero} aria-describedby={erros.numero ? 'numero-erro' : undefined} className={inputCls(erros.numero)} placeholder="Ex.: 100" />
-                    </Campo>
-                    <Campo id="bairro" label="Bairro" erro={erros.bairro}>
-                      <input id="bairro" autoComplete="address-level3" value={form.bairro} onChange={(e) => set('bairro', e.target.value)} aria-invalid={!!erros.bairro} aria-describedby={erros.bairro ? 'bairro-erro' : undefined} className={inputCls(erros.bairro)} placeholder="Ex.: Realengo" />
-                    </Campo>
-                    <Campo id="cep" label="CEP" erro={erros.cep}>
-                      <input id="cep" inputMode="numeric" autoComplete="postal-code" value={form.cep} onChange={(e) => set('cep', mascararCep(e.target.value))} aria-invalid={!!erros.cep} aria-describedby={erros.cep ? 'cep-erro' : undefined} className={inputCls(erros.cep)} placeholder="21725-030" />
-                    </Campo>
-                  </div>
-                  <Campo id="complemento" label="Complemento (opcional)" erro={erros.complemento}>
-                    <input id="complemento" value={form.complemento ?? ''} onChange={(e) => set('complemento', e.target.value)} aria-invalid={!!erros.complemento} className={inputCls(erros.complemento)} placeholder="Ex.: casa 2, apto 301, fundos" />
-                  </Campo>
+                      {temEnderecoPreenchido && (
+                        <button type="button" onClick={usarOutroEndereco} className="rounded-lg border-2 border-preto bg-ambar px-3 py-1.5 text-xs font-extrabold">
+                          Usar outro endereço
+                        </button>
+                      )}
+                      <Campo id="cep" label="CEP" erro={erros.cep}>
+                        <input id="cep" inputMode="numeric" autoComplete="postal-code" value={form.cep} onChange={(e) => void aoDigitarCep(e.target.value)} aria-invalid={!!erros.cep} aria-describedby={erros.cep ? 'cep-erro' : undefined} className={inputCls(erros.cep)} placeholder="Digite o CEP, ex.: 21725-030" />
+                      </Campo>
+                      {modoCep === 'buscando' && (
+                        <p className="-mt-2 flex items-center gap-2 text-xs font-bold" role="status">
+                          <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Buscando o endereço…
+                        </p>
+                      )}
+                      {cepAviso && <p className="-mt-2 text-xs font-bold text-red-800" role="status">{cepAviso}</p>}
+
+                      {modoCep === 'ok' && (
+                        <div className="rounded-lg border-2 border-preto bg-white p-3 text-sm">
+                          <p className="font-extrabold">{form.endereco}</p>
+                          <p>{form.bairro} · {form.cidade}</p>
+                          <button type="button" onClick={() => setCepModo('manual')} className="mt-1 text-xs font-bold underline">
+                            Corrigir endereço
+                          </button>
+                        </div>
+                      )}
+
+                      {modoCep === 'manual' && (
+                        <>
+                          <Campo id="endereco" label="Rua" erro={erros.endereco}>
+                            <input id="endereco" autoComplete="street-address" value={form.endereco} onChange={(e) => set('endereco', e.target.value)} aria-invalid={!!erros.endereco} aria-describedby={erros.endereco ? 'endereco-erro' : undefined} className={inputCls(erros.endereco)} placeholder="Ex.: Rua Piraquara" />
+                          </Campo>
+                          <div className="grid grid-cols-2 gap-3">
+                            <Campo id="bairro" label="Bairro" erro={erros.bairro}>
+                              <input id="bairro" autoComplete="address-level3" value={form.bairro} onChange={(e) => set('bairro', e.target.value)} aria-invalid={!!erros.bairro} aria-describedby={erros.bairro ? 'bairro-erro' : undefined} className={inputCls(erros.bairro)} placeholder="Ex.: Realengo" />
+                            </Campo>
+                            <Campo id="cidade" label="Cidade" erro={erros.cidade}>
+                              <input id="cidade" autoComplete="address-level2" value={form.cidade} onChange={(e) => set('cidade', e.target.value)} aria-invalid={!!erros.cidade} aria-describedby={erros.cidade ? 'cidade-erro' : undefined} className={inputCls(erros.cidade)} placeholder="Ex.: Rio de Janeiro" />
+                            </Campo>
+                          </div>
+                        </>
+                      )}
+
+                      {(modoCep === 'ok' || modoCep === 'manual') && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <Campo id="numero" label="Número" erro={erros.numero}>
+                            <input id="numero" inputMode="numeric" autoComplete="off" value={form.numero} onChange={(e) => set('numero', e.target.value)} aria-invalid={!!erros.numero} aria-describedby={erros.numero ? 'numero-erro' : undefined} className={inputCls(erros.numero)} placeholder="Ex.: 100" />
+                          </Campo>
+                          <Campo id="complemento" label="Complemento (opcional)" erro={erros.complemento}>
+                            <input id="complemento" value={form.complemento ?? ''} onChange={(e) => set('complemento', e.target.value)} aria-invalid={!!erros.complemento} className={inputCls(erros.complemento)} placeholder="Ex.: casa 2" />
+                          </Campo>
+                        </div>
+                      )}
                     </>
                   )}
-                  {typeof frete === 'object' && frete.endereco && (
-                    <p className="-mt-2 text-xs text-preto/80">Entrega para: {frete.endereco} · {frete.km.toFixed(1).replace('.', ',')} km</p>
+                  {typeof frete === 'object' && (
+                    <p className="-mt-2 text-xs text-preto/80">Distância aproximada até você: {frete.km.toFixed(1).replace('.', ',')} km</p>
                   )}
 
                   <fieldset>

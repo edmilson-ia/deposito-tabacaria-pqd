@@ -10,14 +10,15 @@ export interface Frete {
 }
 
 /** Devolve null se o endereço não foi encontrado ou o serviço falhou: a entrega fica "a combinar". */
-export async function calcularFrete(d: { endereco: string; numero: string; bairro: string; cep: string }): Promise<Frete | null> {
+export async function calcularFrete(d: { endereco: string; numero: string; bairro: string; cidade: string; cep: string }): Promise<Frete | null> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), 15000)
   try {
     const res = await fetch(FRETE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rua: d.endereco, numero: d.numero, bairro: d.bairro, cidade: 'Rio de Janeiro', cep: d.cep }),
+      // ViaCEP acrescenta apelidos depois do nome ("Rua X - Tio Nilton"): o mapa só acha a rua sem o apelido
+      body: JSON.stringify({ rua: d.endereco.replace(/\s+-\s+.*$/, '').trim(), numero: d.numero, bairro: d.bairro, cidade: d.cidade, cep: d.cep }),
       signal: ctrl.signal,
     })
     if (!res.ok) return null

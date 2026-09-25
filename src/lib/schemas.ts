@@ -39,6 +39,7 @@ export const checkoutSchema = z
     endereco: z.string().trim().min(3, 'Informe o nome da rua').max(150, 'Nome da rua muito longo'),
     numero: z.string().trim().min(1, 'Informe o número').max(20, 'Número muito longo'),
     bairro: z.string().trim().min(2, 'Informe o bairro').max(80, 'Bairro muito longo'),
+    cidade: z.string().trim().min(2, 'Informe a cidade').max(80, 'Cidade muito longa'),
     complemento: z.string().trim().max(100, 'Máximo de 100 caracteres').optional(),
     cep: z
       .string()
@@ -58,8 +59,8 @@ export const checkoutSchema = z
   })
 
 /** Texto único do endereço (gravado no pedido, na mensagem e no cupom). */
-export function enderecoCompleto(d: { endereco: string; numero: string; bairro: string; complemento?: string; cep: string }): string {
-  return `${d.endereco}, nº ${d.numero}${d.complemento ? ` (${d.complemento})` : ''} - ${d.bairro} - CEP ${mascararCep(d.cep)}`
+export function enderecoCompleto(d: { endereco: string; numero: string; bairro: string; cidade: string; complemento?: string; cep: string }): string {
+  return `${d.endereco}, nº ${d.numero}${d.complemento ? ` (${d.complemento})` : ''} - ${d.bairro}, ${d.cidade} - CEP ${mascararCep(d.cep)}`
 }
 
 export type CheckoutInput = z.input<typeof checkoutSchema>
