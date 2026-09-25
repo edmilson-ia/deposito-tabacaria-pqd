@@ -5,6 +5,7 @@ import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { STATUS_LABEL, useAdminPedidos, useAtualizarStatus, type PedidoAdmin, type StatusPedido } from '@/hooks/useAdmin'
 import { imprimirCupom, imprimirCupomAutomatico } from '@/lib/cupom'
+import { supabase } from '@/lib/supabase'
 import { FORMAS_PAGAMENTO } from '@/lib/schemas'
 import { cn, formatBRL } from '@/lib/utils'
 
@@ -106,16 +107,45 @@ function gravarImpressos(ids: number[]) {
   }
 }
 
+/** Beep curto para avisar que chegou pedido (alguns navegadores só tocam depois de um clique na página). */
+function apitar() {
+  try {
+    const ctx = new AudioContext()
+    const osc = ctx.createOscillator()
+    osc.frequency.value = 880
+    osc.connect(ctx.destination)
+    osc.start()
+    osc.stop(ctx.currentTime + 0.4)
+  } catch {
+    /* sem áudio: só imprime */
+  }
+}
+
 export default function Pedidos() {
   const [status, setStatus] = useState<StatusPedido | 'todos'>('todos')
   const [auto, setAuto] = useState(() => {
     try {
-      return localStorage.getItem(AUTO_KEY) === '1'
+      return localStorage.getItem(AUTO_KEY) !== '0' // ligado por padrão
     } catch {
-      return false
+      return true
     }
   })
-  const pedidos = useAdminPedidos(status, auto ? 15000 : undefined)
+  // Realtime avisa na hora; o intervalo de 10 s é só a garantia se a conexão cair.
+  const pedidos = useAdminPedidos(status, auto ? 10000 : undefined)
+
+  useEffect(() => {
+    if (!auto) return
+    const canal = supabase
+      .channel('pedidos-novos')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos' }, () => {
+        pedidos.refetch()
+      })
+      .subscribe()
+    return () => {
+      void supabase.removeChannel(canal)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto])
 
   function alternarAuto(ligar: boolean) {
     setAuto(ligar)
@@ -131,10 +161,16 @@ export default function Pedidos() {
   // Impressão automática: imprime cada pedido novo que ainda não saiu nesta máquina.
   useEffect(() => {
     if (!auto || !pedidos.data) return
+    // Primeira vez nesta máquina: o que já existe conta como impresso (só pedidos NOVOS saem sozinhos).
+    if (localStorage.getItem(IMPRESSOS_KEY) === null) {
+      gravarImpressos(pedidos.data.map((p) => p.id))
+      return
+    }
     const impressos = new Set(lerImpressos())
     const novos = pedidos.data.filter((p) => p.status === 'novo' && !impressos.has(p.id)).reverse()
     if (!novos.length) return
     gravarImpressos([...impressos, ...novos.map((p) => p.id)])
+    apitar()
     novos.forEach((p, i) => setTimeout(() => imprimirCupomAutomatico(p), i * 1500))
     toast.success(`${novos.length} pedido(s) novo(s): imprimindo o talão.`)
   }, [auto, pedidos.data])
