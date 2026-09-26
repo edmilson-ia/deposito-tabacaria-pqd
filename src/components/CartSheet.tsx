@@ -540,9 +540,11 @@ export function CartSheet() {
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Button type="button" variant="outline" onClick={() => setEtapa(etapa === 'revisao' ? 'dados' : 'itens')} disabled={enviando} aria-label={etapa === 'revisao' ? 'Voltar para trocar a forma de pagamento' : 'Voltar para os itens do pedido'} className="h-12 shrink-0 px-4 text-base">
-                    <ArrowLeft className="h-5 w-5" aria-hidden /> Voltar
-                  </Button>
+                  {etapa !== 'revisao' && (
+                    <Button type="button" variant="outline" onClick={() => setEtapa('itens')} disabled={enviando} aria-label="Voltar para os itens do pedido" className="h-12 shrink-0 px-4 text-base">
+                      <ArrowLeft className="h-5 w-5" aria-hidden /> Voltar
+                    </Button>
+                  )}
                   {etapa === 'revisao' ? (
                     <Button type="button" onClick={() => void finalizar()} disabled={enviando || pausados} className="h-12 flex-1 text-base">
                       {enviando ? (
