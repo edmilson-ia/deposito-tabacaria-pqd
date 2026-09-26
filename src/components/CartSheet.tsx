@@ -43,7 +43,7 @@ function salvarCliente(d: { nome: string; telefone: string; endereco: string; nu
   }
 }
 
-type Etapa = 'itens' | 'dados' | 'ok'
+type Etapa = 'itens' | 'dados' | 'revisao' | 'ok'
 type Erros = Partial<Record<keyof CheckoutInput, string>>
 
 function Campo({ id, label, erro, children }: { id: string; label: string; erro?: string; children: ReactNode }) {
@@ -144,9 +144,10 @@ export function CartSheet() {
   }, [])
 
   const temItens = itens.length > 0
+  const etapaOk = etapa === 'ok'
 
   useEffect(() => {
-    if (!aberto || etapa === 'ok' || !temItens || !enderecoPronto || esperandoCoord) {
+    if (!aberto || etapaOk || !temItens || !enderecoPronto || esperandoCoord) {
       setFrete('idle')
       return
     }
@@ -157,7 +158,7 @@ export function CartSheet() {
       if (seq.current === minha) setFrete(r ?? 'combinar')
     }, 900)
     return () => clearTimeout(t)
-  }, [aberto, etapa, temItens, enderecoPronto, form.endereco, form.numero, form.bairro, form.cidade, form.cep, tabelaFrete, cepCoord, esperandoCoord])
+  }, [aberto, etapaOk, temItens, enderecoPronto, form.endereco, form.numero, form.bairro, form.cidade, form.cep, tabelaFrete, cepCoord, esperandoCoord])
 
   const temEnderecoPreenchido = !!(form.endereco || form.numero || form.bairro || form.cidade || form.complemento || form.cep)
 
@@ -210,8 +211,8 @@ export function CartSheet() {
     }
   }
 
-  async function finalizar(e: FormEvent) {
-    e.preventDefault()
+  async function finalizar(e?: FormEvent) {
+    e?.preventDefault()
     if (enviando) return
     if (pausados) {
       toast.error('Estamos sem receber novos pedidos no momento. Seu carrinho foi mantido.')
@@ -247,6 +248,12 @@ export function CartSheet() {
       return
     }
 
+    // Tela de dados: confere tudo e mostra a revisão (o cliente ainda pode voltar e trocar o pagamento)
+    if (etapa === 'dados') {
+      setEtapa('revisao')
+      return
+    }
+
     setEnviando(true)
     try {
       const freteOk = typeof frete === 'object' ? frete : null
@@ -266,13 +273,13 @@ export function CartSheet() {
     <Sheet open={aberto} onOpenChange={aoMudarAberto}>
       <SheetContent aria-describedby="carrinho-desc">
         <div className="flex items-center gap-2 border-b-2 border-preto bg-verde-escuro px-4 py-3 text-bege">
-          {etapa === 'dados' && (
-            <button onClick={() => setEtapa('itens')} aria-label="Voltar para os itens" className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10">
+          {(etapa === 'dados' || etapa === 'revisao') && (
+            <button onClick={() => setEtapa(etapa === 'revisao' ? 'dados' : 'itens')} aria-label={etapa === 'revisao' ? 'Voltar para alterar a forma de pagamento' : 'Voltar para os itens'} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10">
               <ArrowLeft className="h-5 w-5" aria-hidden />
             </button>
           )}
           <SheetTitle className="font-titulo text-2xl leading-none">
-            {etapa === 'itens' ? 'Seu pedido' : etapa === 'dados' ? 'Seus dados' : 'Pedido enviado'}
+            {etapa === 'itens' ? 'Seu pedido' : etapa === 'dados' ? 'Seus dados' : etapa === 'revisao' ? 'Confirme seu pedido' : 'Pedido enviado'}
           </SheetTitle>
           <SheetClose aria-label="Fechar carrinho" className="ml-auto flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10">
             <X className="h-5 w-5" aria-hidden />
@@ -352,7 +359,39 @@ export function CartSheet() {
                 )}
                 </>
               ) : (
-                <form id="checkout-form" onSubmit={finalizar} noValidate className="space-y-4 p-4">
+                <>
+                {etapa === 'revisao' && (
+                  <div className="space-y-3 p-4 text-sm">
+                    <div className="rounded-lg border-2 border-preto bg-white p-3">
+                      <p className="mb-1 font-extrabold">Itens</p>
+                      <ul className="space-y-0.5">
+                        {itens.map((i) => (
+                          <li key={i.produtoId} className="flex justify-between gap-2">
+                            <span>{i.quantidade}× {i.nome}</span>
+                            <span className="font-bold">{formatBRL(i.quantidade * i.preco)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="rounded-lg border-2 border-preto bg-white p-3">
+                      <p className="font-extrabold">Entregar em</p>
+                      <p>{form.nome} · {form.telefone}</p>
+                      <p>{enderecoCompleto({ endereco: form.endereco, numero: form.numero, bairro: form.bairro, cidade: form.cidade, complemento: form.complemento, cep: form.cep })}</p>
+                      <button type="button" onClick={() => setEtapa('dados')} className="mt-1 text-xs font-bold underline">Alterar dados ou endereço</button>
+                    </div>
+                    <div className="rounded-lg border-2 border-preto bg-ambar p-3">
+                      <p className="font-extrabold">Forma de pagamento</p>
+                      <p className="text-base font-extrabold">
+                        {form.forma_pagamento ? FORMAS_PAGAMENTO[form.forma_pagamento] : '-'}
+                        {form.forma_pagamento === 'dinheiro' && form.troco_para ? ` · troco para ${formatBRL(parseValor(form.troco_para))}` : ''}
+                      </p>
+                      <button type="button" onClick={() => setEtapa('dados')} className="mt-1 rounded-lg border-2 border-preto bg-bege px-3 py-1.5 text-xs font-extrabold">
+                        <ArrowLeft className="mr-1 inline h-4 w-4" aria-hidden /> Trocar forma de pagamento
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <form id="checkout-form" onSubmit={finalizar} noValidate className={cn('space-y-4 p-4', etapa === 'revisao' && 'hidden')}>
                   <Campo id="nome" label="Nome" erro={erros.nome}>
                     <input id="nome" autoComplete="name" value={form.nome} onChange={(e) => set('nome', e.target.value)} aria-invalid={!!erros.nome} aria-describedby={erros.nome ? 'nome-erro' : undefined} className={inputCls(erros.nome)} placeholder="Seu nome" />
                   </Campo>
@@ -467,6 +506,7 @@ export function CartSheet() {
                     <textarea id="obs" rows={2} value={form.observacoes ?? ''} onChange={(e) => set('observacoes', e.target.value)} aria-invalid={!!erros.observacoes} className={cn(inputCls(erros.observacoes), 'h-auto py-2')} placeholder="Ex.: interfone quebrado, trazer gelo..." />
                   </Campo>
                 </form>
+                </>
               )}
             </div>
 
@@ -500,20 +540,26 @@ export function CartSheet() {
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Button type="button" variant="outline" onClick={() => setEtapa('itens')} disabled={enviando} aria-label="Voltar para os itens do pedido" className="h-12 shrink-0 px-4 text-base">
+                  <Button type="button" variant="outline" onClick={() => setEtapa(etapa === 'revisao' ? 'dados' : 'itens')} disabled={enviando} aria-label={etapa === 'revisao' ? 'Voltar para trocar a forma de pagamento' : 'Voltar para os itens do pedido'} className="h-12 shrink-0 px-4 text-base">
                     <ArrowLeft className="h-5 w-5" aria-hidden /> Voltar
                   </Button>
-                  <Button type="submit" form="checkout-form" disabled={enviando || pausados} className="h-12 flex-1 text-base">
-                    {enviando ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> Enviando…
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="h-5 w-5" aria-hidden /> Finalizar pedido
-                      </>
-                    )}
-                  </Button>
+                  {etapa === 'revisao' ? (
+                    <Button type="button" onClick={() => void finalizar()} disabled={enviando || pausados} className="h-12 flex-1 text-base">
+                      {enviando ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> Enviando…
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-5 w-5" aria-hidden /> Confirmar pedido
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button type="submit" form="checkout-form" disabled={pausados} className="h-12 flex-1 text-base">
+                      <CheckCircle2 className="h-5 w-5" aria-hidden /> Finalizar pedido
+                    </Button>
+                  )}
                 </div>
               )}
               {pausados && (
