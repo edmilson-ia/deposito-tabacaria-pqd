@@ -296,7 +296,7 @@ export function CartSheet() {
             <CheckCircle2 className="h-14 w-14 text-verde" aria-hidden />
             <p className="font-titulo text-3xl">Pedido #{confirmado.numero} confirmado!</p>
             <p className="w-full rounded-xl border-2 border-preto bg-ambar px-3 py-2 font-titulo text-2xl leading-tight shadow-adesivo-sm">
-              Tempo de entrega: no máximo 60 minutos
+              Tempo de entrega: em até 40 minutos
             </p>
             <p className="text-sm">Recebemos o seu pedido e já vamos separá-lo. Guarde o número acima para qualquer dúvida.</p>
             {confirmado.formaPagamento === 'pix' && (() => {
@@ -308,7 +308,7 @@ export function CartSheet() {
                   rel="noopener noreferrer"
                   className="flex h-12 w-full items-center justify-center gap-2 rounded-lg border-2 border-preto bg-zap px-4 text-base font-extrabold text-preto shadow-adesivo-sm"
                 >
-                  <WhatsAppIcon className="h-5 w-5" /> Enviar comprovante pelo WhatsApp
+                  <WhatsAppIcon className="h-5 w-5" /> Enviar comprovante do Pix pelo WhatsApp
                 </a>
               ) : null
             })()}
