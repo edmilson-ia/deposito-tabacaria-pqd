@@ -37,6 +37,10 @@ export function montarMensagem({ numeroDiario, itens, subtotal, taxaEntrega, dis
   ].join('\n')
 }
 
+export function montarMensagemComprovante(numeroDiario: number): string {
+  return `Olá! Segue o comprovante do pagamento do meu pedido #${numeroDiario} na ${NOME_LOJA}.`
+}
+
 /** Número da loja vem de configuracoes.whatsapp_numero. Aceita com ou sem 55. */
 export function urlWhatsapp(numeroBruto: string, texto: string): string | null {
   let n = numeroBruto.replace(/\D/g, '')

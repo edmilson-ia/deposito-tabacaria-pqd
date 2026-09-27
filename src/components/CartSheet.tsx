@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } 
 import { toast } from 'sonner'
 import { ProductImage } from '@/components/ProductImage'
 import { Button } from '@/components/ui/button'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { useConfig } from '@/hooks/useCatalogo'
 import { usePedidosPausados } from '@/hooks/useLicenca'
@@ -10,6 +11,7 @@ import { useCart } from '@/lib/cart'
 import { buscarCep } from '@/lib/cep'
 import { calcularFrete, lerTabelaFrete, type Frete } from '@/lib/frete'
 import { criarPedido, PedidoError } from '@/lib/pedido'
+import { montarMensagemComprovante, urlWhatsapp } from '@/lib/whatsapp'
 import { apenasDigitos, checkoutSchema, enderecoCompleto, FORMAS_PAGAMENTO, mascararCep, mascararTelefone, parseValor, type CheckoutInput } from '@/lib/schemas'
 import { cn, FATOR_CARTAO, formatBRL, UNIDADE_LABEL } from '@/lib/utils'
 
@@ -116,7 +118,7 @@ export function CartSheet() {
     const c = lerCliente()
     return !!c.cep && apenasDigitos(c.cep).length === 8 && !lerCoordCliente()
   })
-  const [confirmado, setConfirmado] = useState<{ numero: number } | null>(null)
+  const [confirmado, setConfirmado] = useState<{ numero: number; formaPagamento: CheckoutInput['forma_pagamento'] } | null>(null)
 
   const set = <K extends keyof CheckoutInput>(k: K, v: CheckoutInput[K]) => {
     // corrigir rua/bairro/cidade à mão invalida as coordenadas que vieram do CEP
@@ -260,7 +262,7 @@ export function CartSheet() {
       const pedido = await criarPedido(dados, itens, freteOk)
       salvarCliente({ nome: dados.nome, telefone: form.telefone, endereco: dados.endereco, numero: dados.numero, bairro: dados.bairro, cidade: dados.cidade, complemento: dados.complemento, cep: form.cep, ...(cepCoord ?? {}) })
       limpar()
-      setConfirmado({ numero: pedido.numeroDiario })
+      setConfirmado({ numero: pedido.numeroDiario, formaPagamento: dados.forma_pagamento })
       setEtapa('ok')
     } catch (err) {
       toast.error(err instanceof PedidoError ? err.message : 'Erro inesperado. Seu carrinho foi mantido; tente novamente.')
@@ -297,6 +299,19 @@ export function CartSheet() {
               Tempo de entrega: no máximo 60 minutos
             </p>
             <p className="text-sm">Recebemos o seu pedido e já vamos separá-lo. Guarde o número acima para qualquer dúvida.</p>
+            {confirmado.formaPagamento === 'pix' && (() => {
+              const link = config.data?.whatsapp_numero ? urlWhatsapp(config.data.whatsapp_numero, montarMensagemComprovante(confirmado.numero)) : null
+              return link ? (
+                <a
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-lg border-2 border-preto bg-zap px-4 text-base font-extrabold text-preto shadow-adesivo-sm"
+                >
+                  <WhatsAppIcon className="h-5 w-5" /> Enviar comprovante pelo WhatsApp
+                </a>
+              ) : null
+            })()}
             <Button variant="outline" className="w-full" onClick={() => aoMudarAberto(false)}>
               Voltar ao catálogo
             </Button>
