@@ -15,7 +15,7 @@ const inputCls = (erro?: string) =>
 export default function Configuracoes() {
   const config = useConfig()
   const salvar = useSalvarConfig()
-  const [f, setF] = useState({ nome_loja: '', whatsapp_numero: '', taxa_entrega: '', grupo_promocao_url: '' })
+  const [f, setF] = useState({ nome_loja: '', whatsapp_numero: '', taxa_entrega: '', grupo_promocao_url: '', chave_pix: '' })
   const [erros, setErros] = useState<Partial<Record<keyof typeof f, string>>>({})
   // Tabela de frete por distância (a loja edita aqui; o n8n só informa os km)
   const [faixas, setFaixas] = useState<{ ate: string; valor: string }[]>([])
@@ -29,6 +29,7 @@ export default function Configuracoes() {
         whatsapp_numero: config.data.whatsapp_numero ?? '',
         taxa_entrega: (config.data.taxa_entrega ?? '0').replace('.', ','),
         grupo_promocao_url: config.data.grupo_promocao_url ?? '',
+        chave_pix: config.data.chave_pix ?? '',
       })
       const t = lerTabelaFrete(config.data)
       setFaixas(t.faixas.map((x) => ({ ate: String(x.ate).replace('.', ','), valor: x.valor.toFixed(2).replace('.', ',') })))
@@ -62,6 +63,7 @@ export default function Configuracoes() {
         whatsapp_numero: r.data.whatsapp_numero,
         taxa_entrega: String(r.data.taxa_entrega),
         grupo_promocao_url: r.data.grupo_promocao_url,
+        chave_pix: r.data.chave_pix,
       },
       {
         onSuccess: () => toast.success('Configurações salvas'),
@@ -101,6 +103,7 @@ export default function Configuracoes() {
           {campo('whatsapp_numero', 'WhatsApp da loja', 'Com DDI e DDD, só números. Ex.: 5521999999999. É para onde os pedidos são enviados.', { inputMode: 'numeric', placeholder: '5521999999999' })}
           {campo('taxa_entrega', 'Taxa de entrega (R$)', 'Usada só quando o cálculo por distância não funciona (endereço não encontrado). Deixe 0 para "a combinar com o cliente".', { inputMode: 'decimal', placeholder: '0,00' })}
           {campo('grupo_promocao_url', 'Link do grupo de promoção (WhatsApp)', 'Cole aqui o link de convite do grupo. Deixe em branco para o botão "Promoção" não aparecer na tela inicial.', { placeholder: 'https://chat.whatsapp.com/...' })}
+          {campo('chave_pix', 'Chave Pix', 'CPF/CNPJ, e-mail, telefone ou chave aleatória. Aparece pro cliente copiar quando ele escolhe pagar no Pix. Deixe em branco para não mostrar.', { placeholder: '00.000.000/0001-00' })}
           <fieldset className="space-y-2 rounded-lg border-2 border-preto bg-white p-3">
             <legend className="px-1 text-sm font-extrabold">Taxa de entrega por distância</legend>
             <p className="text-xs text-preto/80">

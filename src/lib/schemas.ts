@@ -96,6 +96,7 @@ export const configSchema = z.object({
     .string()
     .trim()
     .refine((s) => s === '' || /^https:\/\/(chat\.whatsapp\.com|wa\.me)\//.test(s), 'Cole o link do grupo do WhatsApp (começa com https://chat.whatsapp.com/)'),
+  chave_pix: z.string().trim().max(140, 'Máximo de 140 caracteres'),
 })
 
 export const categoriaSchema = z.object({

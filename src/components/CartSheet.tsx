@@ -1,4 +1,4 @@
-import { ArrowLeft, CheckCircle2, Loader2, Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Copy, Loader2, Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { ProductImage } from '@/components/ProductImage'
@@ -385,6 +385,23 @@ export function CartSheet() {
                         {form.forma_pagamento ? FORMAS_PAGAMENTO[form.forma_pagamento] : '-'}
                         {form.forma_pagamento === 'dinheiro' && form.troco_para ? ` · troco para ${formatBRL(parseValor(form.troco_para))}` : ''}
                       </p>
+                      {form.forma_pagamento === 'pix' && !!config.data?.chave_pix && (
+                        <div className="mt-2 flex items-center gap-2 rounded-lg border-2 border-preto bg-white p-2">
+                          <p className="flex-1 break-all text-xs font-bold">Chave Pix: {config.data.chave_pix}</p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(config.data!.chave_pix).then(
+                                () => toast.success('Chave Pix copiada'),
+                                () => toast.error('Não foi possível copiar. Copie manualmente.'),
+                              )
+                            }}
+                            className="flex shrink-0 items-center gap-1 rounded-lg border-2 border-preto bg-ambar px-2 py-1 text-xs font-extrabold"
+                          >
+                            <Copy className="h-3.5 w-3.5" aria-hidden /> Copiar
+                          </button>
+                        </div>
+                      )}
                       <button type="button" onClick={() => setEtapa('dados')} className="mt-1 rounded-lg border-2 border-preto bg-bege px-3 py-1.5 text-xs font-extrabold">
                         <ArrowLeft className="mr-1 inline h-4 w-4" aria-hidden /> Trocar forma de pagamento
                       </button>
@@ -500,6 +517,28 @@ export function CartSheet() {
                     <Campo id="troco" label="Troco para quanto? (opcional)" erro={erros.troco_para}>
                       <input id="troco" inputMode="decimal" value={form.troco_para ?? ''} onChange={(e) => set('troco_para', e.target.value)} aria-invalid={!!erros.troco_para} aria-describedby={erros.troco_para ? 'troco-erro' : undefined} className={inputCls(erros.troco_para)} placeholder="Ex.: 100" />
                     </Campo>
+                  )}
+
+                  {form.forma_pagamento === 'pix' && !!config.data?.chave_pix && (
+                    <div className="rounded-lg border-2 border-preto bg-white p-3">
+                      <p className="text-xs font-extrabold">Chave Pix da loja</p>
+                      <div className="mt-1 flex items-center gap-2">
+                        <p className="flex-1 break-all text-sm font-bold">{config.data.chave_pix}</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(config.data!.chave_pix).then(
+                              () => toast.success('Chave Pix copiada'),
+                              () => toast.error('Não foi possível copiar. Copie manualmente.'),
+                            )
+                          }}
+                          className="flex shrink-0 items-center gap-1 rounded-lg border-2 border-preto bg-ambar px-2.5 py-1.5 text-xs font-extrabold shadow-adesivo-sm"
+                        >
+                          <Copy className="h-3.5 w-3.5" aria-hidden /> Copiar
+                        </button>
+                      </div>
+                      <p className="mt-1 text-xs text-preto/70">Copie e pague pelo app do seu banco antes de finalizar, se preferir.</p>
+                    </div>
                   )}
 
                   <Campo id="obs" label="Observações (opcional)" erro={erros.observacoes}>
