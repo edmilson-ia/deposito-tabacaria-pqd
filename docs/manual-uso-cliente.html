@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Como usar o aplicativo — Depósito e Tabacaria do PQD</title>
+<style>
+  @page { margin: 16mm 15mm; }
+  * { box-sizing: border-box; }
+  body { font: 13.5px/1.55 "Segoe UI", Arial, sans-serif; color: #1a1a1a; margin: 0; }
+
+  .capa {
+    background: #1f2e23;
+    color: #efd8ac;
+    padding: 60px 40px;
+    border-radius: 16px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .capa h1 { font-size: 30px; margin: 0 0 10px; color: #efd8ac; }
+  .capa p { color: #cfc19f; font-size: 15px; margin: 4px 0; }
+  .capa .selo { display: inline-block; margin-top: 18px; background: #f58926; color: #111; font-weight: 800; padding: 6px 16px; border-radius: 999px; font-size: 12px; }
+
+  .indice { background: #f3efe6; border-radius: 12px; padding: 16px 22px; margin: 18px 0 26px; }
+  .indice h2 { margin: 0 0 8px; font-size: 15px; color: #1f3b2c; }
+  .indice ol { margin: 0; padding-left: 20px; }
+  .indice li { margin: 3px 0; }
+
+  .fase-capa {
+    page-break-before: always;
+    background: linear-gradient(135deg, #2a3e2e, #1f2e23);
+    color: #efd8ac;
+    border-radius: 16px;
+    padding: 34px 30px;
+    margin-bottom: 20px;
+  }
+  .fase-capa .tag { display: inline-block; background: #f58926; color: #111; font-weight: 800; font-size: 12px; padding: 4px 12px; border-radius: 999px; margin-bottom: 10px; }
+  .fase-capa h1 { margin: 0 0 6px; font-size: 24px; color: #fff; }
+  .fase-capa p { margin: 0; color: #d8cfae; font-size: 13.5px; }
+
+  h2.passo {
+    font-size: 16px;
+    margin: 22px 0 4px;
+    color: #1f3b2c;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2.passo .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #f58926; color: #111; font-size: 13px; font-weight: 800; flex-shrink: 0;
+  }
+  h3 { font-size: 13.5px; margin: 12px 0 4px; color: #1f3b2c; }
+  p { margin: 5px 0; }
+  ul, ol { margin: 5px 0 5px 20px; padding: 0; }
+  li { margin: 3px 0; }
+
+  .quadro {
+    display: flex; gap: 16px; align-items: flex-start;
+    margin: 6px 0 14px;
+  }
+  .quadro .texto { flex: 1; min-width: 0; }
+  .quadro img {
+    width: 190px; border-radius: 10px; border: 2px solid #1f2e23;
+    box-shadow: 0 2px 6px rgba(0,0,0,.18);
+    flex-shrink: 0;
+  }
+  .quadro.largo { display: block; }
+  .quadro.largo img { width: 100%; max-width: 100%; border-radius: 10px; }
+  .quadro.inverso { flex-direction: row-reverse; }
+
+  .dica {
+    background: #fff3d6; border-left: 4px solid #f58926;
+    padding: 8px 12px; border-radius: 6px; margin: 8px 0;
+    font-size: 12.5px;
+  }
+  .dica b { color: #8a4a00; }
+
+  .aviso {
+    background: #fde3e3; border-left: 4px solid #c0392b;
+    padding: 8px 12px; border-radius: 6px; margin: 8px 0;
+    font-size: 12.5px;
+  }
+
+  table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; font-size: 12.5px; }
+  th, td { border: 1px solid #d8cfae; padding: 5px 9px; text-align: left; vertical-align: top; }
+  th { background: #f3efe6; }
+
+  .rodape-pagina { margin-top: 26px; padding-top: 10px; border-top: 1px solid #d8cfae; color: #888; font-size: 10.5px; text-align: center; }
+
+  .quebra { page-break-before: always; }
+  code { font-family: Consolas, monospace; font-size: 12px; background: #f3efe6; border-radius: 4px; padding: 1px 5px; }
+</style>
+</head>
+<body>
+
+<div class="capa">
+  <h1>Depósito e Tabacaria do PQD</h1>
+  <p style="font-size:19px; color:#fff; font-weight:700; margin-top:14px;">Manual de uso do aplicativo</p>
+  <p>Um guia simples, passo a passo, para você usar sua loja online e o painel de gerenciamento.</p>
+  <div class="selo">Nunca usou o aplicativo? Comece por aqui.</div>
+</div>
+
+<div class="indice">
+  <h2>O que você vai encontrar neste manual</h2>
+  <ol>
+    <li><b>Fase 1 — A Loja:</b> o que o seu cliente vê e como ele faz um pedido, do início ao fim.</li>
+    <li><b>Fase 2 — Painel Administrativo:</b> como você gerencia produtos, pedidos e as configurações da sua loja.</li>
+  </ol>
+  <p style="margin-top:8px; color:#555;">Dica: você não precisa ler tudo de uma vez. Volte aqui sempre que tiver uma dúvida específica.</p>
+</div>
+
+<!-- ===================== FASE 1 ===================== -->
+
+<div class="fase-capa">
+  <div class="tag">FASE 1 de 2</div>
+  <h1>A Loja — o que o seu cliente vê</h1>
+  <p>Este é o site que você compartilha com os clientes. Aqui está exatamente o caminho que eles percorrem, do primeiro clique até o pedido confirmado.</p>
+</div>
+
+<h2 class="passo"><span class="num">1</span> O cliente abre o link da loja</h2>
+<div class="quadro">
+  <img src="manual-imgs/1-home.jpg" alt="Tela inicial">
+  <div class="texto">
+    <p>Ao abrir o link da sua loja pelo celular, o cliente vê:</p>
+    <ul>
+      <li>Um aviso perguntando se ele é maior de 18 anos (obrigatório por lei, já que a loja vende bebida alcoólica).</li>
+      <li>A tela inicial, com o botão para ver o catálogo completo, o botão de Promoção (que leva ao seu grupo de WhatsApp) e as categorias mais pedidas.</li>
+    </ul>
+    <div class="dica"><b>Dica:</b> esse é o link que você compartilha nas redes sociais, no status do WhatsApp ou manda direto pro cliente.</div>
+  </div>
+</div>
+
+<h2 class="passo"><span class="num">2</span> O cliente escolhe os produtos</h2>
+<div class="quadro">
+  <img src="manual-imgs/2-catalogo.jpg" alt="Catálogo de produtos">
+  <div class="texto">
+    <p>No catálogo, o cliente pode:</p>
+    <ul>
+      <li><b>Buscar</b> um produto pelo nome.</li>
+      <li><b>Filtrar</b> por categoria (Cervejas, Refrigerantes, Tabacaria, etc.).</li>
+      <li>Tocar na foto do produto para <b>ampliar</b> e ver melhor.</li>
+      <li>Tocar em <b>Adicionar</b> para colocar o produto no carrinho.</li>
+    </ul>
+  </div>
+</div>
+
+<h2 class="passo"><span class="num">3</span> O cliente revisa o carrinho</h2>
+<div class="quadro inverso">
+  <img src="manual-imgs/3-carrinho.jpg" alt="Carrinho de compras">
+  <div class="texto">
+    <p>Tocando no ícone do carrinho (canto superior direito), o cliente vê tudo o que escolheu e pode:</p>
+    <ul>
+      <li>Aumentar ou diminuir a quantidade de cada item.</li>
+      <li>Remover um item (lixeira).</li>
+      <li>Ver o subtotal do pedido.</li>
+    </ul>
+    <p>Quando estiver pronto, ele toca em <b>Continuar</b>.</p>
+  </div>
+</div>
+
+<h2 class="passo"><span class="num">4</span> O cliente preenche os dados de entrega</h2>
+<div class="quadro">
+  <img src="manual-imgs/4-dados.jpg" alt="Tela de dados do cliente">
+  <div class="texto">
+    <p>Aqui o cliente informa nome, telefone e o <b>CEP</b>.</p>
+    <div class="dica"><b>Isso é automático:</b> assim que o cliente digita o CEP, o aplicativo já preenche a rua, o bairro e a cidade sozinho. O cliente só precisa informar o número da casa e, se quiser, um complemento.</div>
+    <p>A taxa de entrega também é calculada automaticamente, pela distância entre a loja e o endereço do cliente. Se o endereço não for encontrado, a entrega fica marcada como <b>"a combinar"</b> — e o pedido ainda pode ser finalizado normalmente.</p>
+    <p>Depois, ele escolhe a <b>forma de pagamento</b> (obrigatória): Pix, Dinheiro ou Cartão.</p>
+  </div>
+</div>
+
+<table>
+  <tr><th>Forma de pagamento</th><th>Como funciona</th></tr>
+  <tr><td>Pix ou Dinheiro</td><td>Tem <b>desconto de 10%</b> sobre o valor dos produtos (a entrega não entra no desconto). No caso do dinheiro, o cliente pode informar pra quanto precisa de troco.</td></tr>
+  <tr><td>Cartão (débito/crédito)</td><td>Paga o preço cheio mostrado no site — é pago na entrega, na maquininha.</td></tr>
+</table>
+
+<h2 class="passo"><span class="num">5</span> Se escolher Pix: a chave já aparece pronta</h2>
+<div class="quadro inverso">
+  <img src="manual-imgs/5-revisao.jpg" alt="Revisão do pedido com a chave Pix">
+  <div class="texto">
+    <p>Antes de confirmar, o cliente vê um resumo completo do pedido: itens, endereço e forma de pagamento — com um botão para <b>trocar a forma de pagamento</b> sem precisar voltar ao catálogo.</p>
+    <p>Se ele escolheu <b>Pix</b>, a chave Pix da sua loja já aparece na tela, com um botão de <b>Copiar</b> — assim o cliente pode fazer o pagamento direto pelo aplicativo do banco dele, sem precisar te perguntar a chave.</p>
+    <div class="dica"><b>Onde você troca a chave Pix:</b> no painel administrativo, aba Loja (mostrado na Fase 2 deste manual).</div>
+  </div>
+</div>
+
+<h2 class="passo"><span class="num">6</span> Pedido confirmado</h2>
+<div class="quadro">
+  <img src="manual-imgs/6-confirmado.jpg" alt="Tela de pedido confirmado">
+  <div class="texto">
+    <p>Depois de tocar em <b>Confirmar pedido</b>, o cliente vê a confirmação com o número do pedido e o tempo estimado de entrega.</p>
+    <p>Se o pagamento foi por <b>Pix</b>, aparece um botão verde <b>"Enviar comprovante do Pix pelo WhatsApp"</b> — ao tocar, abre o WhatsApp da sua loja com uma mensagem já pronta, citando o número do pedido. É assim que você recebe o comprovante e confirma o pagamento.</p>
+    <div class="aviso"><b>Importante:</b> o pedido já foi gravado no seu painel administrativo nesse momento — você não precisa esperar o comprovante para vê-lo na lista de pedidos.</div>
+  </div>
+</div>
+
+<!-- ===================== FASE 2 ===================== -->
+
+<div class="fase-capa quebra">
+  <div class="tag">FASE 2 de 2</div>
+  <h1>Painel Administrativo — onde você gerencia tudo</h1>
+  <p>É aqui que você acompanha os pedidos, cadastra produtos, ajusta preços e configura a loja. Só você (e quem você autorizar) tem acesso.</p>
+</div>
+
+<h2 class="passo"><span class="num">1</span> Como entrar no painel</h2>
+<div class="quadro">
+  <img src="manual-imgs/7-admin-login.jpg" alt="Tela de login do painel">
+  <div class="texto">
+    <p>Acesse o endereço da sua loja seguido de <code>/admin</code> (ex.: <code>sualoja.com.br/admin</code>).</p>
+    <p>Entre com seu <b>e-mail (ou telefone)</b> e <b>senha</b>. Esqueceu a senha? Toque em <b>"Esqueci minha senha"</b> — você recebe um link por e-mail para criar uma nova.</p>
+    <div class="dica"><b>Dica de segurança:</b> não compartilhe sua senha. Se desconfiar que alguém mais teve acesso, troque a senha na aba "Minha conta" assim que entrar.</div>
+  </div>
+</div>
+
+<h2 class="passo"><span class="num">2</span> Acompanhando os pedidos</h2>
+<div class="quadro largo">
+  <img src="manual-imgs/8-admin-pedidos.jpg" alt="Lista de pedidos no painel">
+</div>
+<div class="texto">
+  <p>Essa é a tela mais importante do dia a dia. Assim que um cliente finaliza um pedido, ele aparece aqui na hora — <b>e o talão já sai sozinho na impressora da loja</b> (com a caixinha "Imprimir pedidos novos automaticamente" marcada).</p>
+  <p>Em cada pedido você vê: nome e telefone do cliente (toque no telefone pra chamar no WhatsApp), endereço, itens, forma de pagamento e observações.</p>
+  <ul>
+    <li>Use os botões no topo (Novo, Confirmado, Em entrega...) para <b>filtrar</b> a lista por status.</li>
+    <li>No campo <b>Status</b> de cada pedido, você muda a etapa: <i>novo → confirmado → em entrega → entregue</i> (ou cancelado, se for o caso).</li>
+    <li>O botão <b>Imprimir cupom</b> reimprime o talão daquele pedido, se precisar.</li>
+  </ul>
+</div>
+
+<h2 class="passo quebra"><span class="num">3</span> Cadastrando e editando produtos</h2>
+<div class="quadro largo">
+  <img src="manual-imgs/9-admin-produtos.jpg" alt="Lista de produtos no painel">
+</div>
+<div class="texto">
+  <p>Na aba <b>Produtos</b>, você vê o catálogo inteiro. Para cada produto:</p>
+  <ul>
+    <li><b>Preço e estoque</b> podem ser editados direto na lista — só clicar no campo, mudar o valor e apertar Enter (ou o botão Salvar que aparece).</li>
+    <li>O <b>interruptor verde</b> ativa/desativa o produto (desativado some do catálogo, mas não é apagado).</li>
+    <li>O ícone de <b>lápis</b> abre a edição completa: nome, descrição, categoria, unidade (unidade ou pack) e a <b>foto</b> do produto (pode enviar direto do celular — o aplicativo ajusta o tamanho sozinho).</li>
+    <li>O botão <b>Novo produto</b>, no topo, cadastra um item do zero.</li>
+    <li><b>Exportar JSON</b> baixa uma cópia de segurança do catálogo inteiro — bom para guardar de vez em quando.</li>
+  </ul>
+  <div class="dica"><b>Buscar e filtrar:</b> use a busca por nome ou os filtros de categoria para achar um produto rápido, principalmente com o catálogo grande.</div>
+</div>
+
+<h2 class="passo"><span class="num">4</span> Categorias</h2>
+<p>Na aba <b>Categorias</b>, você pode criar novas categorias, renomear as existentes e reordenar (a ordem que você define aqui é a mesma ordem dos botões no catálogo). Uma categoria só pode ser apagada se não tiver nenhum produto nela.</p>
+
+<h2 class="passo"><span class="num">5</span> Configurações da loja</h2>
+<div class="quadro largo">
+  <img src="manual-imgs/10-admin-loja.jpg" alt="Configurações da loja no painel">
+</div>
+<div class="texto">
+  <p>Na aba <b>Loja</b>, você ajusta o que muda com mais frequência, sem precisar de ajuda técnica:</p>
+  <ul>
+    <li><b>Nome da loja</b> — aparece no site e nas mensagens.</li>
+    <li><b>WhatsApp da loja</b> — é pra esse número que os comprovantes de Pix chegam.</li>
+    <li><b>Chave Pix</b> — a que aparece pro cliente na hora de pagar. Cole aqui CPF, CNPJ, e-mail, telefone ou chave aleatória.</li>
+    <li><b>Taxa de entrega por distância</b> — a tabela que calcula o frete automaticamente conforme os km até o cliente. Você define as faixas (ex.: "até 3 km = R$ 5,00") e o valor por km extra.</li>
+    <li><b>Link do grupo de promoção</b> — se preenchido, mostra o botão "Promoção" na tela inicial da loja.</li>
+  </ul>
+  <p>Sempre que mudar algo aqui, clique em <b>Salvar configurações</b> no final da página. A mudança já vale para os próximos pedidos.</p>
+</div>
+
+<h2 class="passo"><span class="num">6</span> Minha conta</h2>
+<p>Na aba <b>Minha conta</b> você troca seu e-mail e sua senha de login quando quiser, sem precisar de ajuda.</p>
+
+<h2 class="passo quebra"><span class="num">7</span> Cuidados do dia a dia</h2>
+<ul>
+  <li>Deixe o computador da loja <b>ligado</b>, com internet e a impressora ligada, e a janela do painel de pedidos aberta (pode ficar minimizada) — é assim que a impressão automática funciona.</li>
+  <li>Confira de vez em quando se algum produto ficou sem estoque ou sem foto.</li>
+  <li>Se um cliente disser que o pedido não chegou a você, confira a aba Pedidos — o pagamento por Pix só é confirmado quando você recebe o comprovante pelo WhatsApp.</li>
+  <li>Guarde sua senha em local seguro e não a compartilhe.</li>
+</ul>
+
+<div class="dica" style="margin-top:18px;">
+  <b>Ficou com alguma dúvida que não está neste manual?</b> Chame a Evolua Automação — estamos por perto para ajudar.
+</div>
+
+<div class="rodape-pagina">
+  Aplicativo desenvolvido pela Evolua Automação — instagram.com/evolua_automacao
+</div>
+
+</body>
+</html>
