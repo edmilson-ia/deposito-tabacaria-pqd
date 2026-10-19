@@ -1,5 +1,7 @@
 # Depósito e Tabacaria do PQD — catálogo e pedidos pelo WhatsApp
 
+Em resumo: app de catálogo e pedidos para um depósito e tabacaria. O cliente monta o pedido, ele é salvo no banco (Supabase) e a mensagem pronta abre no WhatsApp. Tem painel de administração e já fica preparado para automações com n8n.
+
 App mobile-first: o cliente monta o pedido no catálogo, o pedido é **salvo no Supabase** e a mensagem pronta abre no **WhatsApp**. Tem painel admin (`/admin`) e já fica preparado para o **n8n** (via webhook do Supabase).
 
 **Stack:** React + TypeScript + Vite + Tailwind CSS v4 · React Router · TanStack Query · Zod · Supabase (Postgres, Storage, Auth) · sonner (avisos).
